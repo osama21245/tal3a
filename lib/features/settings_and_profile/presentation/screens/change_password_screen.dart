@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/widgets/training_app_bar_widget.dart';
+import 'package:tal3a/core/widgets/custom_app_bar.dart';
 import '../../../../core/const/color_pallete.dart';
 import '../../../../core/utils/animation_helper.dart';
 import '../widgets/change_password_screen/change_password_form_widget.dart';
@@ -20,7 +20,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       body: Column(
         children: [
           // Header with Training App Bar
-          TrainingAppBarWidget(
+          CustomAppBar(
             title: 'Change Password',
             onBackPressed: () => Navigator.of(context).pop(),
           ),

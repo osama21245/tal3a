@@ -4,6 +4,8 @@ import 'package:tal3a/features/auth/presentation/screens/choose_verification_way
 import 'package:tal3a/features/auth/presentation/screens/select_interests_screen.dart';
 import 'package:tal3a/features/auth/presentation/screens/select_more_data_screen.dart';
 import 'package:tal3a/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:tal3a/features/tal3a_vibes/presentation/screens/tal3a_vibes_screen.dart';
+import 'package:tal3a/features/walk_with_ai/presentation/screens/aI_walk_meta.dart';
 import 'package:tal3a/start_screen.dart';
 
 // Import all screens
@@ -574,7 +576,18 @@ class AppRouter {
             );
           },
         );
-
+      case Routes.aiWalkMeta:
+        return MaterialPageRoute(
+          builder: (context) {
+            return AIWalkMeta();
+          },
+        );
+          case Routes.tal3aVibes:
+        return MaterialPageRoute(
+          builder: (context) {
+            return Tal3aVibesScreen();
+          },
+        );
       // Default route (Splash/Onboarding)
       case Routes.splashScreen:
       default:

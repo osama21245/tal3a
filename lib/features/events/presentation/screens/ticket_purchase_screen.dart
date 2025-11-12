@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/widgets/training_app_bar_widget.dart';
+import 'package:tal3a/core/widgets/custom_app_bar.dart';
 import '../../../../core/network/api_client.dart';
 import '../widgets/ticket_purchase_screen/ticket_purchase_content_widget.dart';
 import '../../data/datasources/events_remote_datasource.dart';
@@ -27,7 +27,7 @@ class TicketPurchaseScreen extends StatelessWidget {
         body: Column(
           children: [
             // Header with Training App Bar
-            TrainingAppBarWidget(
+            CustomAppBar(
               title: 'events.event_details'.tr(),
               onBackPressed: () => Navigator.of(context).pop(),
             ),
@@ -58,7 +58,7 @@ class TicketPurchaseScreen extends StatelessWidget {
         body: Column(
           children: [
             // Header with Training App Bar
-            TrainingAppBarWidget(
+            CustomAppBar(
               title: 'events.event_details'.tr(),
               onBackPressed: () => Navigator.of(context).pop(),
             ),

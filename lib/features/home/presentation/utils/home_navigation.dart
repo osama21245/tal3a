@@ -55,6 +55,11 @@ class HomeNavigation {
     Navigator.pushNamed(context, Routes.progressScreen);
   }
 
+  /// Navigate to AiWalk Screen from home
+  static void toAiWalk(BuildContext context) {
+    Navigator.pushNamed(context, Routes.aiWalkMeta);
+  }
+
   /// Pop current screen and return to home
   static void popToHome(BuildContext context) {
     Navigator.popUntil(

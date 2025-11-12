@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../core/widgets/training_app_bar_widget.dart';
+import 'package:tal3a/core/widgets/custom_app_bar.dart';
+
 import '../../../../core/const/color_pallete.dart';
 import '../../../../core/utils/animation_helper.dart';
 import '../widgets/settings_screen/settings_tab_selector_widget.dart';
@@ -30,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: Column(
         children: [
           // Header with Training App Bar
-          TrainingAppBarWidget(
+          CustomAppBar(
             title: 'Settings',
             onBackPressed: () => Navigator.of(context).pop(),
           ),

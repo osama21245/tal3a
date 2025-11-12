@@ -6,4 +6,4 @@ export 'auth_screen_header_widget.dart';
 export 'activity_header_widget.dart';
 export 'walk_activity_header_widget.dart';
 export 'activity_content_widget.dart';
-export 'training_app_bar_widget.dart';
+export 'custom_app_bar.dart';

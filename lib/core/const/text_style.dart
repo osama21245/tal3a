@@ -744,4 +744,12 @@ class AppTextStyles {
     height: 1.43, // 20px line height
     letterSpacing: 0.42,
   );
+    static TextStyle get tal3aVibesStoryStyle => const TextStyle(
+    color: Color(0xFFE7EAEB),
+    fontSize: 14,
+    fontWeight: FontWeight.w300,
+    fontFamily: 'Rubik',
+    height: 1.43, // 20px line height
+    letterSpacing: 0.42,
+  );
 }

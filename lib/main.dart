@@ -60,7 +60,7 @@ class MyApp extends StatelessWidget {
               locale: context.locale,
               supportedLocales: context.supportedLocales,
               localizationsDelegates: context.localizationDelegates,
-              initialRoute: Routes.chooseTal3aTypeScreen,
+              initialRoute: Routes.onboardingScreen,
               onGenerateRoute: AppRouter.generateRoute,
               debugShowCheckedModeBanner: false,
             ),

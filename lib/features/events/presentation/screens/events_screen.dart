@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/widgets/training_app_bar_widget.dart';
+import 'package:tal3a/core/widgets/custom_app_bar.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../widgets/events_screen/events_tab_selector_widget.dart';
 import '../widgets/events_screen/events_search_filter_widget.dart';
@@ -31,7 +31,7 @@ class _EventsScreenState extends State<EventsScreen> {
       body: Column(
         children: [
           // Header with Training App Bar
-          TrainingAppBarWidget(
+          CustomAppBar(
             title: 'events.title'.tr(),
             onBackPressed: () => Navigator.of(context).pop(),
           ),

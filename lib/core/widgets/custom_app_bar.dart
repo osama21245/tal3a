@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import '../const/color_pallete.dart';
-import '../const/text_style.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:tal3a/core/const/color_pallete.dart';
+import 'package:tal3a/core/const/text_style.dart';
 
-class TrainingAppBarWidget extends StatelessWidget {
+class CustomAppBar extends StatelessWidget {
+  const CustomAppBar({super.key, required this.title, this.onBackPressed});
   final String title;
   final VoidCallback? onBackPressed;
-
-  const TrainingAppBarWidget({
-    super.key,
-    required this.title,
-    this.onBackPressed,
-  });
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -22,9 +16,6 @@ class TrainingAppBarWidget extends StatelessWidget {
       decoration: BoxDecoration(color: ColorPalette.trainingHeaderBg),
       child: Stack(
         children: [
-          // Status Bar
-
-          // Main Content
           Positioned(
             bottom: 0,
             left: 0,
@@ -84,5 +75,6 @@ class TrainingAppBarWidget extends StatelessWidget {
         ],
       ),
     );
+    ;
   }
 }

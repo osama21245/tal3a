@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tal3a/core/widgets/custom_app_bar.dart';
 import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/change_password_screen.dart';
 import 'presentation/controllers/settings_cubit.dart';
@@ -8,7 +9,6 @@ import 'presentation/controllers/change_password_cubit.dart';
 import 'presentation/widgets/settings_screen/settings_tab_selector_widget.dart';
 import 'presentation/widgets/settings_screen/settings_profile_card_widget.dart';
 import 'presentation/widgets/settings_screen/settings_menu_list_widget.dart';
-import '../../core/widgets/training_app_bar_widget.dart';
 import '../../core/const/color_pallete.dart';
 import '../../core/utils/animation_helper.dart';
 import '../../core/network/api_client.dart';
@@ -68,7 +68,7 @@ class _SettingsContentWidgetState extends State<SettingsContentWidget> {
       child: Column(
         children: [
           // Header with Training App Bar
-          TrainingAppBarWidget(
+          CustomAppBar(
             title: 'Settings',
             onBackPressed: () => Navigator.of(context).pop(),
           ),

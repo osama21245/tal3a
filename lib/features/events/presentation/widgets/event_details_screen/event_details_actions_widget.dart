@@ -194,7 +194,7 @@ class EventDetailsActionsWidget extends StatelessWidget {
             style: const TextStyle(
               color: Color(0xFF0C2B3B), // Figma: #0c2b3b
               fontSize: 18,
-              fontWeight: FontWeight.w500, // Medium
+              fontWeight: FontWeight.w400, // Medium
               fontFamily: 'Rubik',
               letterSpacing: 0.54,
             ),

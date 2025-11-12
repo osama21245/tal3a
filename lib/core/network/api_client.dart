@@ -97,6 +97,45 @@ class ApiClient {
     }
   }
 
+  // Authenticated DELETE Request with automatic token refresh
+  Future<ApiResponse> deleteAuthenticated(
+    String endpoint, {
+    Map<String, String>? queryParams,
+  }) async {
+    // First attempt with current token
+    final headers = await _apiAuthService.getAuthenticatedHeaders();
+    final response = await delete(
+      endpoint,
+      headers: headers,
+      queryParams: queryParams,
+    );
+
+    // Handle different status codes
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response;
+    } else if (response.statusCode == 498) {
+      print('🔍 ApiClient: Token expired, attempting refresh and retry');
+      final newHeaders = await _apiAuthService.handleTokenExpired();
+      if (newHeaders != null) {
+        final retryResponse = await delete(
+          endpoint,
+          headers: newHeaders,
+          queryParams: queryParams,
+        );
+        if (retryResponse.statusCode == 498) {
+          throw AuthenticationException('Session expired. Please login again.');
+        }
+        return retryResponse;
+      } else {
+        throw AuthenticationException('Session expired. Please login again.');
+      }
+    } else {
+      // Handle other HTTP status codes
+      handleHttpStatusCode(response.statusCode, response.error ?? '');
+      return response; // This line won't be reached due to exception above
+    }
+  }
+
   // Authenticated Multipart Upload with automatic token refresh
   Future<ApiResponse> uploadMultipartAuthenticated(
     String endpoint, {

@@ -35,6 +35,15 @@ class ApiConstants {
   static const String refreshTokenEndpoint = '/api/v1/auth/refreshToken';
   static const String profileSetupEndpoint = '/api/v1/auth/completeProfile';
 
+  // tal3a vibes endpoints
+  static const String foryouVideos = '/api/v1/tal3aVibesRoute/videos/foryou';
+  static const String likeVideo = '/api/v1/tal3aVibesRoute/like';
+  static const String uploadVideo = 'api/v1/tal3aVibesRoute/uploadVideo';
+  static const String myPosts = '/api/v1/tal3aVibesRoute/myPosts';
+  static const String comments = '/api/v1/tal3aVibesRoute/comments';
+  static const String comment = '/api/v1/tal3aVibesRoute/comment/';
+  static const String deleteComment = '/api/v1/tal3aVibesRoute/deleteComment';
+
   // Bearer Token
   static const String bearerToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDEzNTJkOTIwOTgzNTNiNzY1YzJiZiIsImlhdCI6MTc2MTMxNzg1NCwiZXhwIjoxNzYxMzM5NDU0fQ.mWXBUzgEj1awxCHMLppzHKXOnxFSQZ4DZSgB5ZP6ciU';

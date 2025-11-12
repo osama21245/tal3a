@@ -280,4 +280,9 @@ class ColorPalette {
     0xFF1A181A,
   ); // Home indicator background
   static const Color homeActiveDot = Color(0xFF00AAFF); // Active tab dot
+
+    // Tal3a Vibes Colors (from Figma)
+  static const Color tal3aVibesHeaderBg = Color(
+    0xFF0C2B3B,
+  );
 }

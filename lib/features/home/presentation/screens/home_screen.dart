@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:tal3a/features/tal3a_vibes/tal3a_vibes_feature.dart';
 import '../widgets/home_screen/custom_fluid_bottom_nav_widget.dart';
 import '../../../../core/const/color_pallete.dart';
 import '../../../../core/network/api_client.dart';
@@ -193,57 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCommunityScreen() {
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      width: double.infinity,
-      color: ColorPalette.homeMainBg,
-      child: Column(
-        children: [
-          // Community Header
-          Container(
-            height: 100.h,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: ColorPalette.homeHeaderBg,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(14),
-                bottomRight: Radius.circular(14),
-              ),
-            ),
-            child: const SafeArea(
-              child: Center(
-                child: Text(
-                  'Community',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-          // Community Content
-          Expanded(
-            child: Container(
-              width: double.infinity,
-              color: ColorPalette.homeMainBg,
-              child: const Center(
-                child: Text(
-                  'Community Content',
-                  style: TextStyle(
-                    fontSize: 24,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return Tal3aVibesFeature.getTal3aVibesScreen();
   }
 
   Widget _buildProfileScreen() {

@@ -69,4 +69,10 @@ class Routes {
   static const String progressScreen = '/progress';
   static const String communityScreen = '/community';
   static const String notificationsScreen = '/notifications';
+
+  // AI Feature Routes
+  static const String aiWalkMeta = '/aiWalkMeta';
+
+  // tal3a vibes Feature Routes
+  static const String tal3aVibes = '/tal3aVibes';
 }

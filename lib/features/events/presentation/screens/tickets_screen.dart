@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../core/widgets/training_app_bar_widget.dart';
+import 'package:tal3a/core/widgets/custom_app_bar.dart';
 import '../../../../core/const/color_pallete.dart';
 import '../../../../core/network/api_client.dart';
 import '../../data/datasources/events_remote_datasource.dart';
@@ -31,7 +31,7 @@ class TicketsScreen extends StatelessWidget {
         body: Column(
           children: [
             // Header with Training App Bar
-            TrainingAppBarWidget(
+            CustomAppBar(
               title: 'events.my_tickets'.tr(),
               onBackPressed: () => Navigator.of(context).pop(),
             ),
