@@ -11,7 +11,7 @@ abstract class VideoDataSource {
   Future<VideoUploadResponseModel> uploadVideo({
     required VideoUploadRequestModel request,
   });
-  Future<List<VideoModel>> getForYouVideos();
+  Future<List<VideoModel>> getForYouVideos({int page , int limit });
   Future<List<VideoModel>> myPosts({
     required int page,
     required int limit,
@@ -28,6 +28,13 @@ abstract class VideoDataSource {
     required String text,
   });
   Future<void> deleteComment({required String commentId});
+  Future<int> viewCountUpdate({required String videoId});
+  Future<int> shareCountUpdate({required String videoId});
+  Future<void> reportVideo({
+    required String videoId,
+    required String reason,
+    required String description,
+  });
 }
 
 class VideoDataSourceImpl implements VideoDataSource {
@@ -57,22 +64,21 @@ class VideoDataSourceImpl implements VideoDataSource {
     }
   }
 
-  @override
-  Future<List<VideoModel>> getForYouVideos() async {
-    final response = await _apiClient.getAuthenticated(
-      ApiConstants.foryouVideos,
-    );
+@override
+  Future<List<VideoModel>> getForYouVideos({int page = 1, int limit = 20}) async {
+  final response = await _apiClient.getAuthenticated(
+    '${ApiConstants.foryouVideos}?page=$page&limit=$limit',
+  );
 
-    if (response.isSuccess) {
-      final data = response.data['data'] as List;
-      return data.map((json) => VideoModel.fromJson(json)).toList();
-    } else {
-      throw ServerException(
-        message:
-            'Failed to fetch For You videos >>>> ${response.error ?? 'Unknown error'}',
-      );
-    }
+  if (response.isSuccess) {
+    final data = response.data['data'] as List;
+    return data.map((json) => VideoModel.fromJson(json)).toList();
+  } else {
+    throw ServerException(
+      message: 'Failed to fetch For You videos >>>> ${response.error ?? 'Unknown error'}',
+    );
   }
+}
 
   @override
   Future<List<VideoModel>> myPosts({
@@ -91,6 +97,7 @@ class VideoDataSourceImpl implements VideoDataSource {
 
     if (response.isSuccess) {
       final List<dynamic> data = response.data['data'];
+      
       return data.map((json) => VideoModel.fromJson(json)).toList();
     } else {
       throw ServerException(message: 'Failed to fetch >>>> ${response.error}');
@@ -130,7 +137,7 @@ class VideoDataSourceImpl implements VideoDataSource {
       return dataList.map((e) => CommentModel.fromJson(e)).toList();
     } else {
       throw ServerException(
-        message: 'Failed to fetch comments: ${response.error}',
+        message: 'Failed to fetch comments >>>> ${response.error}',
       );
     }
   }
@@ -150,14 +157,14 @@ class VideoDataSourceImpl implements VideoDataSource {
       return CommentModel.fromJson(data);
     } else {
       throw ServerException(
-        message: 'Failed to post comment: ${response.error}',
+        message: 'Failed to post comment >>>> ${response.error}',
       );
     }
   }
 
   @override
   Future<void> deleteComment({required String commentId}) async {
-    final response = await _apiClient.deleteAuthenticated(
+    final response = await _apiClient.postAuthenticated(
       '${ApiConstants.deleteComment}/$commentId',
     );
 
@@ -165,7 +172,58 @@ class VideoDataSourceImpl implements VideoDataSource {
       return;
     } else {
       throw ServerException(
-        message: 'Failed to delete comment: ${response.error}',
+        message: 'Failed to delete comment >>>> ${response.error}',
+      );
+    }
+  }
+
+  @override
+  Future<int> viewCountUpdate({required String videoId}) async {
+    final response = await _apiClient.postAuthenticated(
+      '${ApiConstants.videoViewCountUpdate}/$videoId',
+    );
+
+    if (response.isSuccess) {
+      return response.data['data']['views'] as int;
+    } else {
+      throw ServerException(
+        message:
+            'Failed to increment view >>>> ${response.error ?? 'unknown error'}',
+      );
+    }
+  }
+
+  @override
+  Future<int> shareCountUpdate({required String videoId}) async {
+    final response = await _apiClient.postAuthenticated(
+      '${ApiConstants.videoShareCountUpdate}/$videoId/share',
+    );
+
+    if (response.isSuccess) {
+      return response.data['data']['shares'] as int;
+    } else {
+      throw ServerException(
+        message:
+            'Failed to increment share count >>>> ${response.error ?? 'unknown error'}',
+      );
+    }
+  }
+
+  @override
+  Future<void> reportVideo({
+    required String videoId,
+    required String reason,
+    required String description,
+  }) async {
+    final response = await _apiClient.postAuthenticated(
+      '${ApiConstants.report}/$videoId',
+      body: {"reason": reason, "description": description},
+    );
+
+    if (!response.isSuccess) {
+      throw ServerException(
+        message:
+            'Failed to report video >>>> ${response.error ?? 'unknown error'}',
       );
     }
   }

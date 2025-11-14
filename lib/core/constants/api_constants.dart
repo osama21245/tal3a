@@ -41,9 +41,12 @@ class ApiConstants {
   static const String uploadVideo = 'api/v1/tal3aVibesRoute/uploadVideo';
   static const String myPosts = '/api/v1/tal3aVibesRoute/myPosts';
   static const String comments = '/api/v1/tal3aVibesRoute/comments';
-  static const String comment = '/api/v1/tal3aVibesRoute/comment/';
+  static const String comment = '/api/v1/tal3aVibesRoute/comment';
   static const String deleteComment = '/api/v1/tal3aVibesRoute/deleteComment';
-
+  static const String videoViewCountUpdate =
+      '/api/v1/tal3aVibesRoute/deleteComment';
+  static const String videoShareCountUpdate = '/api/v1/tal3aVibesRoute/video';
+  static const String report = '/api/v1/tal3aVibesRoute/report';
   // Bearer Token
   static const String bearerToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ZDEzNTJkOTIwOTgzNTNiNzY1YzJiZiIsImlhdCI6MTc2MTMxNzg1NCwiZXhwIjoxNzYxMzM5NDU0fQ.mWXBUzgEj1awxCHMLppzHKXOnxFSQZ4DZSgB5ZP6ciU';

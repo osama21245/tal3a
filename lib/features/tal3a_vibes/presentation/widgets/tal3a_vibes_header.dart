@@ -21,6 +21,7 @@ class Tal3aVibesHeader extends StatefulWidget {
 class _Tal3aVibesHeaderState extends State<Tal3aVibesHeader> {
   @override
   void initState() {
+    super.initState();
     // Load users with stories when widget initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<StoryCubit>().loadUsersWithStories();
@@ -46,7 +47,7 @@ class _Tal3aVibesHeaderState extends State<Tal3aVibesHeader> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(left: 20,right: 20, top: 50,bottom: 0),
+            padding: EdgeInsets.only(left: 20, top: 50,bottom: 0),
             child: Column(
               children: [
                 Container(
@@ -121,15 +122,13 @@ class _Tal3aVibesHeaderState extends State<Tal3aVibesHeader> {
     );
   }
 
-
-
   Widget _buildProfessionalShimmerItem(int index) {
     return SizedBox(
       width: 64,
       child: Column(
         children: [
           Shimmer.fromColors(
-            baseColor: Colors.grey,
+            baseColor: Colors.grey.withOpacity(0.12),
             highlightColor: Colors.white.withOpacity(0.9),
             period: Duration(milliseconds: 1000 + (index * 200)),
             child: Container(
@@ -137,21 +136,20 @@ class _Tal3aVibesHeaderState extends State<Tal3aVibesHeader> {
               height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.grey,
+                color: Colors.grey.withOpacity(0.15),
               ),
             ),
           ),
           const SizedBox(height: 5),
-          // Name shimmer with professional gradient
           Shimmer.fromColors(
-            baseColor: Colors.grey,
+            baseColor: Colors.grey.withOpacity(0.12),
             highlightColor: Colors.white.withOpacity(0.9),
             period: Duration(milliseconds: 1000 + (index * 200)),
             child: Container(
               width: 50,
               height: 12,
               decoration: BoxDecoration(
-                color: Colors.grey,
+                color: Colors.grey.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
@@ -165,7 +163,7 @@ class _Tal3aVibesHeaderState extends State<Tal3aVibesHeader> {
     return GestureDetector(
       onTap: () => _navigateToCamera(),
       child: SizedBox(
-        width: 64, // Fixed width to match other items
+        width: 64, 
         child: Column(
           children: [
             Container(
@@ -201,7 +199,7 @@ class _Tal3aVibesHeaderState extends State<Tal3aVibesHeader> {
 
   Widget _buildUserProfile(String userId, String? imagePath, String name) {
     return SizedBox(
-      width: 64, // Fixed width to prevent horizontal expansion
+      width: 64, 
       child: GestureDetector(
         onTap: () => _navigateToUserStories(userId, name, imagePath),
         child: Container(
@@ -212,7 +210,7 @@ class _Tal3aVibesHeaderState extends State<Tal3aVibesHeader> {
           child: Column(
             children: [
               Container(
-                width: 64, // Match the add button size
+                width: 64, 
                 height: 64,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,

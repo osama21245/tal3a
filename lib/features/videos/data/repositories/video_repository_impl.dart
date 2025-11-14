@@ -13,7 +13,7 @@ abstract class VideoRepository {
   });
 
   Future<Either<Failure, List<VideoModel>>> getForYouVideos();
-  
+
   Future<Either<Failure, List<VideoModel>>> myPosts({
     required int page,
     required int limit,
@@ -34,13 +34,25 @@ abstract class VideoRepository {
   });
 
   Future<Either<Failure, void>> deleteComment({required String commentId});
+
+  Future<Either<Failure, int>> viewCountUpdate({required String videoId});
+  Future<Either<Failure, int>> shareCountUpdate({required String videoId});
+  Future<Either<Failure, void>> reportVideo({
+    required String videoId,
+    required String reason,
+    required String description,
+  });
 }
 
 class VideoRepositoryImpl implements VideoRepository {
+  final String userId;
+
   final VideoDataSource _dataSource;
 
-  VideoRepositoryImpl({required VideoDataSource dataSource})
-      : _dataSource = dataSource;
+  VideoRepositoryImpl({
+    required this.userId,
+    required VideoDataSource dataSource,
+  }) : _dataSource = dataSource;
 
   @override
   Future<Either<Failure, VideoUploadResponseModel>> uploadVideo({
@@ -51,10 +63,25 @@ class VideoRepositoryImpl implements VideoRepository {
     });
   }
 
+  // Get ForYou Videos and handling isLike state in the model
   @override
-  Future<Either<Failure, List<VideoModel>>> getForYouVideos() async {
+  Future<Either<Failure, List<VideoModel>>> getForYouVideos({
+    int page = 1,
+    int limit = 10,
+  }) async {
     return executeTryAndCatchForRepository(() async {
-      return await _dataSource.getForYouVideos();
+      final videos = await _dataSource.getForYouVideos(
+        page: page,
+        limit: limit,
+      );
+
+      final updatedVideos =
+          videos.map((video) {
+            final isLiked = video.likedUsers.contains(userId);
+            return video.copyWith(isLiked: isLiked);
+          }).toList();
+
+      return updatedVideos;
     });
   }
 
@@ -65,7 +92,11 @@ class VideoRepositoryImpl implements VideoRepository {
     required String status,
   }) async {
     return executeTryAndCatchForRepository(() async {
-      return await _dataSource.myPosts(page: page, limit: limit, status: status);
+      return await _dataSource.myPosts(
+        page: page,
+        limit: limit,
+        status: status,
+      );
     });
   }
 
@@ -83,7 +114,11 @@ class VideoRepositoryImpl implements VideoRepository {
     int limit = 20,
   }) async {
     return executeTryAndCatchForRepository(() async {
-      return await _dataSource.getComments(videoId: videoId, page: page, limit: limit);
+      return await _dataSource.getComments(
+        videoId: videoId,
+        page: page,
+        limit: limit,
+      );
     });
   }
 
@@ -98,9 +133,44 @@ class VideoRepositoryImpl implements VideoRepository {
   }
 
   @override
-  Future<Either<Failure, void>> deleteComment({required String commentId}) async {
+  Future<Either<Failure, void>> deleteComment({
+    required String commentId,
+  }) async {
     return executeTryAndCatchForRepository(() async {
       return await _dataSource.deleteComment(commentId: commentId);
+    });
+  }
+
+  @override
+  Future<Either<Failure, int>> viewCountUpdate({
+    required String videoId,
+  }) async {
+    return executeTryAndCatchForRepository(() async {
+      return await _dataSource.viewCountUpdate(videoId: videoId);
+    });
+  }
+
+  @override
+  Future<Either<Failure, int>> shareCountUpdate({
+    required String videoId,
+  }) async {
+    return executeTryAndCatchForRepository(() async {
+      return await _dataSource.shareCountUpdate(videoId: videoId);
+    });
+  }
+
+  @override
+  Future<Either<Failure, void>> reportVideo({
+    required String videoId,
+    required String reason,
+    required String description,
+  }) async {
+    return executeTryAndCatchForRepository(() async {
+      return await _dataSource.reportVideo(
+        videoId: videoId,
+        reason: reason,
+        description: description,
+      );
     });
   }
 }

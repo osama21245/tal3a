@@ -1,3 +1,5 @@
+import 'package:tal3a/features/videos/data/model/comment_model.dart';
+
 class VideoModel {
   final String id;
   final String userId;
@@ -12,6 +14,9 @@ class VideoModel {
   final bool isFollowed;
   final String status;
   final List<String> hashtags;
+  final bool hasViewed;
+  final List<String> likedUsers;
+  final List<CommentModel> comments;
 
   const VideoModel({
     required this.id,
@@ -27,9 +32,14 @@ class VideoModel {
     this.isFollowed = false,
     this.status = '',
     this.hashtags = const [],
+    this.hasViewed = false,
+    this.likedUsers = const [],
+    this.comments = const [],
   });
 
   factory VideoModel.fromJson(Map<String, dynamic> json) {
+    final likedUsersList = List<String>.from(json['likes'] ?? []);
+
     return VideoModel(
       id: json['_id'] ?? '',
       userId: json['user']?['_id'] ?? '',
@@ -37,13 +47,17 @@ class VideoModel {
       userImageUrl: json['user']?['profilePic'] ?? '',
       videoUrl: json['videoUrl'] ?? '',
       description: json['description'] ?? '',
-      likes: json['likesCount'] ?? 0,
+      likes: json['likesCount'] ?? likedUsersList.length,
       shares: json['shares'] ?? 0,
       views: json['views'] ?? 0,
       status: json['status'] ?? '',
-      hashtags: (json['hashtags'] != null)
-          ? List<String>.from(json['hashtags'])
-          : const [],
+      hashtags:
+          (json['hashtags'] != null)
+              ? List<String>.from(json['hashtags'])
+              : const [],
+      hasViewed: false,
+      likedUsers: likedUsersList,
+      isLiked: false,
     );
   }
 
@@ -61,6 +75,9 @@ class VideoModel {
     bool? isFollowed,
     String? status,
     List<String>? hashtags,
+    bool? hasViewed,
+    List<String>? likedUsers,
+    List<CommentModel>? comments,
   }) {
     return VideoModel(
       id: id ?? this.id,
@@ -76,6 +93,9 @@ class VideoModel {
       isFollowed: isFollowed ?? this.isFollowed,
       status: status ?? this.status,
       hashtags: hashtags ?? this.hashtags,
+      hasViewed: hasViewed ?? this.hasViewed,
+      likedUsers: likedUsers ?? this.likedUsers,
+      comments: comments ?? this.comments,
     );
   }
 }

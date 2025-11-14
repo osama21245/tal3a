@@ -208,7 +208,6 @@
     "error_loading_event_details": "There is a problem retrieving event details. Try again later.",
     "only_days_hours_minutes_seconds_until_event": "Only 12 Days 10 Hours │15 Minutes 60 Seconds Until the Event",
     "price": "Price",
-    "tickets": "Tickets",
     "my_tickets": "My Tickets",
     "no_tickets_title": "No Tickets Yet",
     "no_tickets_description": "You haven't purchased any tickets yet. Explore events and get your first ticket!",
@@ -230,7 +229,15 @@
     "error": "Error",
     "success": "Success",
     "continue": "Continue",
-    "retry": "Try Again"
-  }
+    "retry": "Try Again",
+    "submit": "Submit"
+
+  },
+
+  "inappropriate_content": "Inappropriate content",
+  "harassment": "Harassment",
+  "false_information": "False information",
+  "write_report_reason":"Write report reason"
+
 }
 

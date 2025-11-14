@@ -208,7 +208,6 @@
     "error_loading_event_details": "هناك مشكلة في استرجاع تفاصيل الحدث. حاول مرة أخرى لاحقاً.",
     "only_days_hours_minutes_seconds_until_event": "12 يوم 10 ساعات │15 دقيقة 60 ثانية فقط حتى الحدث",
     "price": "السعر",
-    "tickets": "التذاكر",
     "my_tickets": "تذاكري",
     "no_tickets_title": "لا توجد تذاكر بعد",
     "no_tickets_description": "لم تشترِ أي تذاكر بعد. استكشف الأحداث واحصل على تذكرتك الأولى!",
@@ -230,7 +229,15 @@
     "error": "خطأ",
     "success": "نجح",
     "continue": "متابعة",
-    "retry": "حاول مرة أخرى"
-  }
+    "retry": "حاول مرة أخرى",
+    "submit": "إرسال"
+
+
+  } ,
+  "inappropriate_content": "محتوى غير لائق",
+  "harassment": "تحرش",
+  "false_information": "معلومات خاطئة",
+  "write_report_reason": "اكتب سبب البلاغ"
+
 }
 
