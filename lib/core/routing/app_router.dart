@@ -35,6 +35,7 @@ import '../../features/activites/presentation/screens/walk/group/group_choose_ti
 import '../../features/activites/presentation/screens/biking/biking_choose_type_screen.dart';
 import '../../features/activites/presentation/screens/biking/biking_choose_gender_screen.dart';
 import '../../features/activites/presentation/screens/biking/biking_choose_friend_screen.dart';
+import '../../features/activites/presentation/screens/biking/biking_choose_location_screen.dart';
 import '../../features/activites/presentation/screens/biking/biking_choose_time_screen.dart';
 import '../../features/activites/presentation/screens/biking/group/biking_group_choose_type_screen.dart';
 import '../../features/activites/presentation/screens/biking/group/biking_group_choose_location_screen.dart';
@@ -154,7 +155,7 @@ class AppRouter {
           builder: (context) {
             // Fallback: create new cubit if none provided
             return BlocProvider(
-              create: (context) => TrainingCubit(),
+              create: (context) => TrainingCubit()..loadCoaches(),
               child: const TrainingChooseCoachScreen(),
             );
           },
@@ -166,6 +167,11 @@ class AppRouter {
             // Get the cubit from the previous screen
             final cubit = settings.arguments as TrainingCubit?;
             if (cubit != null) {
+              // Load coach detail when navigating to mode screen
+              final selectedCoach = cubit.state.selectedCoach;
+              if (selectedCoach != null) {
+                cubit.loadCoachDetail(selectedCoach.id);
+              }
               return BlocProvider.value(
                 value: cubit,
                 child: const TrainingChooseModeScreen(),
@@ -185,6 +191,15 @@ class AppRouter {
             // Get the cubit from the previous screen
             final cubit = settings.arguments as TrainingCubit?;
             if (cubit != null) {
+              // Load video series when navigating to training screen
+              final selectedCoach = cubit.state.selectedCoach;
+              final selectedMode = cubit.state.selectedMode;
+              if (selectedCoach != null && selectedMode != null) {
+                cubit.loadVideoSeries(
+                  coachId: selectedCoach.id,
+                  trainingModeId: selectedMode.id,
+                );
+              }
               return BlocProvider.value(
                 value: cubit,
                 child: const TrainingScreen(),
@@ -352,6 +367,23 @@ class AppRouter {
             return BlocProvider(
               create: (context) => BikingCubit(),
               child: const BikingChooseFriendScreen(),
+            );
+          },
+        );
+
+      case Routes.bikingChooseLocationScreen:
+        return MaterialPageRoute(
+          builder: (context) {
+            final cubit = settings.arguments as BikingCubit?;
+            if (cubit != null) {
+              return BlocProvider.value(
+                value: cubit,
+                child: const BikingChooseLocationScreen(),
+              );
+            }
+            return BlocProvider(
+              create: (context) => BikingCubit(),
+              child: const BikingChooseLocationScreen(),
             );
           },
         );
@@ -582,7 +614,7 @@ class AppRouter {
             return AIWalkMeta();
           },
         );
-          case Routes.tal3aVibes:
+      case Routes.tal3aVibes:
         return MaterialPageRoute(
           builder: (context) {
             return Tal3aVibesScreen();

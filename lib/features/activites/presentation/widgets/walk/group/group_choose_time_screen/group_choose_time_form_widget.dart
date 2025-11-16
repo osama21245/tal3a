@@ -3,10 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tal3a/core/const/color_pallete.dart';
 import 'package:tal3a/core/const/text_style.dart';
-import 'package:tal3a/features/activites/data/models/group_time_model.dart';
+import 'package:tal3a/features/activites/data/models/group_tal3a_detail_model.dart';
 import 'package:tal3a/features/activites/presentation/controllers/walk_cubit.dart';
 import 'package:tal3a/features/activites/presentation/controllers/walk_state.dart';
 import 'package:tal3a/core/utils/animation_helper.dart';
+import 'package:intl/intl.dart';
 
 class GroupChooseTimeFormWidget extends StatefulWidget {
   const GroupChooseTimeFormWidget({super.key});
@@ -17,11 +18,12 @@ class GroupChooseTimeFormWidget extends StatefulWidget {
 }
 
 class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
+  GroupTal3aDetailTimeSlot? _selectedTimeSlot;
+  
   @override
   void initState() {
     super.initState();
-    // Load group times when the widget initializes
-    context.read<WalkCubit>().loadGroupTimes();
+    // Time slots are already loaded from the location selection
   }
 
   @override
@@ -65,6 +67,17 @@ class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
   }
 
   Widget _buildTodaysPickSection(WalkState state) {
+    final selectedDetail = state.selectedGroupTal3aDetail;
+    if (selectedDetail == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Format the date from the group tal3a detail
+    final dateFormat = DateFormat('d');
+    final dayFormat = DateFormat('EEE');
+    final dateStr = dateFormat.format(selectedDetail.date);
+    final dayStr = dayFormat.format(selectedDetail.date);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -81,22 +94,13 @@ class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
 
         SizedBox(height: 15.h),
 
-        // Calendar-like display showing days
+        // Calendar-like display showing the date from the group tal3a detail
         Container(
           width: double.infinity,
           height: 134.h,
           child: Row(
             children: [
-              // Day cards (19, 20, 21, 22, 23)
-              _buildDayCard('19', 'Sun', false),
-              SizedBox(width: 15.w),
-              _buildDayCard('20', 'Mon', false),
-              SizedBox(width: 15.w),
-              _buildDayCard('21', 'Tue', true), // Today's pick - highlighted
-              SizedBox(width: 15.w),
-              _buildDayCard('22', 'Wed', false),
-              SizedBox(width: 15.w),
-              _buildDayCard('23', 'Thu', false),
+              _buildDayCard(dateStr, dayStr, true), // Selected date
             ],
           ),
         ),
@@ -142,6 +146,11 @@ class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
   }
 
   Widget _buildChooseTimeSection(WalkState state) {
+    final selectedDetail = state.selectedGroupTal3aDetail;
+    if (selectedDetail == null || selectedDetail.timeSlots.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -158,15 +167,14 @@ class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
 
         SizedBox(height: 15.h),
 
-        // Time slots list
-        ...state.groupTimes.map((time) => _buildTimeSlotCard(time, state)),
+        // Time slots list from the group tal3a detail
+        ...selectedDetail.timeSlots.map((timeSlot) => _buildTimeSlotCard(timeSlot)),
       ],
     );
   }
 
-  Widget _buildTimeSlotCard(GroupTimeModel time, WalkState state) {
-    final isSelected = state.selectedGroupTime?.id == time.id;
-    final isAvailable = time.isAvailable;
+  Widget _buildTimeSlotCard(GroupTal3aDetailTimeSlot timeSlot) {
+    final isSelected = _selectedTimeSlot?.id == timeSlot.id;
 
     return Container(
       width: double.infinity,
@@ -183,18 +191,16 @@ class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: isAvailable ? () => _selectTime(time) : null,
+          onTap: () => _selectTime(timeSlot),
           borderRadius: BorderRadius.circular(14),
           child: Center(
             child: Text(
-              time.timeSlot,
+              timeSlot.startTime, // Display start time
               style: AppTextStyles.trainingTitleStyle.copyWith(
                 color:
                     isSelected
                         ? Colors.white
-                        : isAvailable
-                        ? ColorPalette.calendarDayText
-                        : ColorPalette.activityTextGrey.withOpacity(0.5),
+                        : ColorPalette.calendarDayText,
                 fontSize: 16,
                 fontWeight: FontWeight.w300,
               ),
@@ -206,7 +212,7 @@ class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
   }
 
   Widget _buildContinueButton(BuildContext context, WalkState state) {
-    final canContinue = state.selectedGroupTime != null;
+    final canContinue = _selectedTimeSlot != null;
 
     return SizedBox(
       width: double.infinity,
@@ -234,24 +240,76 @@ class _GroupChooseTimeFormWidgetState extends State<GroupChooseTimeFormWidget> {
     );
   }
 
-  void _selectTime(GroupTimeModel time) {
-    context.read<WalkCubit>().selectGroupTime(time);
+  void _selectTime(GroupTal3aDetailTimeSlot timeSlot) {
+    setState(() {
+      _selectedTimeSlot = timeSlot;
+    });
   }
 
-  void _continue(BuildContext context) {
-    // TODO: Navigate to the next screen or start the group session
-    print('Group session started with:');
-    final state = context.read<WalkCubit>().state;
-    print('Group Type: ${state.selectedGroupType?.name}');
-    print('Group Location: ${state.selectedGroupLocation?.name}');
-    print('Group Time: ${state.selectedGroupTime?.timeSlot}');
+  void _continue(BuildContext context) async {
+    final cubit = context.read<WalkCubit>();
+    final state = cubit.state;
+    
+    if (_selectedTimeSlot == null || state.selectedGroupTal3aDetail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a time slot'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
-    // For now, just show a success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Group session created successfully!'),
-        backgroundColor: Colors.green,
-      ),
+    // Map group type ID to API format
+    String groupTypeApi = 'group_mix'; // default
+    if (state.selectedGroupType != null) {
+      switch (state.selectedGroupType!.id) {
+        case 'group_ma':
+          groupTypeApi = 'group_man';
+          break;
+        case 'group_wo':
+          groupTypeApi = 'group_woman';
+          break;
+        case 'mix_group':
+          groupTypeApi = 'group_mix';
+          break;
+      }
+    }
+
+    // Format date as "2025-11-01"
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final dateStr = dateFormat.format(state.selectedGroupTal3aDetail!.date);
+
+    // Send group request
+    await cubit.sendGroupRequest(
+      groupType: groupTypeApi,
+      date: dateStr,
+      time: _selectedTimeSlot!.startTime, // Use startTime from timeslot
     );
+
+    if (!mounted) return;
+
+    final currentState = cubit.state;
+    if (currentState.status == WalkStatus.error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(currentState.error ?? 'Failed to create group request'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else if (currentState.status == WalkStatus.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Group request created successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      // Navigate to home after a short delay
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      });
+    }
   }
 }

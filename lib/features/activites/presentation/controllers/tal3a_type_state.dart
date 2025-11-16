@@ -4,6 +4,8 @@ import '../../data/models/walk_type_model.dart';
 import '../../data/models/walk_gender_model.dart';
 import '../../data/models/walk_friend_model.dart';
 import '../../data/models/walk_time_model.dart';
+import '../../data/models/training_mode_model.dart';
+import '../../data/models/training_video_series_model.dart';
 
 enum Tal3aTypeStatus { initial, loading, success, error }
 
@@ -52,6 +54,9 @@ class CoachData {
   final String title;
   final double rating;
   final String? imageUrl;
+  final String? email;
+  final String? bio;
+  final int? totalRatings;
   final Map<String, dynamic>? additionalData;
 
   CoachData({
@@ -60,8 +65,28 @@ class CoachData {
     required this.title,
     required this.rating,
     this.imageUrl,
+    this.email,
+    this.bio,
+    this.totalRatings,
     this.additionalData,
   });
+
+  factory CoachData.fromJson(Map<String, dynamic> json) {
+    final coachCategory = json['coachCategory'] as Map<String, dynamic>?;
+    final categoryName = coachCategory?['name'] as String? ?? 'Coach';
+
+    return CoachData(
+      id: (json['_id'] ?? json['id'] ?? '').toString(),
+      name: (json['name'] ?? '').toString(),
+      title: categoryName,
+      rating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
+      imageUrl: json['profileImage'] as String?,
+      email: json['email'] as String?,
+      bio: json['bio'] as String?,
+      totalRatings: json['totalRatings'] as int?,
+      additionalData: json,
+    );
+  }
 
   CoachData copyWith({
     String? id,
@@ -69,6 +94,9 @@ class CoachData {
     String? title,
     double? rating,
     String? imageUrl,
+    String? email,
+    String? bio,
+    int? totalRatings,
     Map<String, dynamic>? additionalData,
   }) {
     return CoachData(
@@ -77,6 +105,9 @@ class CoachData {
       title: title ?? this.title,
       rating: rating ?? this.rating,
       imageUrl: imageUrl ?? this.imageUrl,
+      email: email ?? this.email,
+      bio: bio ?? this.bio,
+      totalRatings: totalRatings ?? this.totalRatings,
       additionalData: additionalData ?? this.additionalData,
     );
   }
@@ -109,9 +140,13 @@ class Tal3aTypeState {
   final String? error;
   final Tal3aTypeData? selectedTal3aType;
   final CoachData? selectedCoach;
-  final String? selectedMode;
+  final TrainingModeModel? selectedMode;
   final int currentStep;
   final List<NavigationNode> navigationHistory;
+  final List<CoachData> coaches;
+  final List<TrainingModeModel> trainingModes;
+  final List<TrainingVideoSeriesModel> videoSeries;
+  final TrainingVideoSeriesModel? selectedVideo;
 
   // Walk-specific data
   final WalkTypeModel? selectedWalkType;
@@ -127,6 +162,10 @@ class Tal3aTypeState {
     this.selectedMode,
     this.currentStep = 0,
     this.navigationHistory = const [],
+    this.coaches = const [],
+    this.trainingModes = const [],
+    this.videoSeries = const [],
+    this.selectedVideo,
     this.selectedWalkType,
     this.selectedWalkGender,
     this.selectedWalkFriend,
@@ -138,9 +177,13 @@ class Tal3aTypeState {
     String? error,
     Tal3aTypeData? selectedTal3aType,
     CoachData? selectedCoach,
-    String? selectedMode,
+    TrainingModeModel? selectedMode,
     int? currentStep,
     List<NavigationNode>? navigationHistory,
+    List<CoachData>? coaches,
+    List<TrainingModeModel>? trainingModes,
+    List<TrainingVideoSeriesModel>? videoSeries,
+    TrainingVideoSeriesModel? selectedVideo,
     WalkTypeModel? selectedWalkType,
     WalkGenderModel? selectedWalkGender,
     WalkFriendModel? selectedWalkFriend,
@@ -154,6 +197,10 @@ class Tal3aTypeState {
       selectedMode: selectedMode ?? this.selectedMode,
       currentStep: currentStep ?? this.currentStep,
       navigationHistory: navigationHistory ?? this.navigationHistory,
+      coaches: coaches ?? this.coaches,
+      trainingModes: trainingModes ?? this.trainingModes,
+      videoSeries: videoSeries ?? this.videoSeries,
+      selectedVideo: selectedVideo ?? this.selectedVideo,
       selectedWalkType: selectedWalkType ?? this.selectedWalkType,
       selectedWalkGender: selectedWalkGender ?? this.selectedWalkGender,
       selectedWalkFriend: selectedWalkFriend ?? this.selectedWalkFriend,

@@ -126,17 +126,7 @@ class CoachSelectionWidget extends StatelessWidget {
                   topLeft: Radius.circular(8),
                   topRight: Radius.circular(8),
                 ),
-                child:
-                    coach.imageUrl != null
-                        ? Image.asset(coach.imageUrl!, fit: BoxFit.cover)
-                        : Container(
-                          color: Colors.grey[300],
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.grey[600],
-                            size: 30,
-                          ),
-                        ),
+                child: _buildCoachImage(coach.imageUrl),
               ),
             ),
 
@@ -259,6 +249,58 @@ class CoachSelectionWidget extends StatelessWidget {
 
     // Fallback: if no "Capt.", make the whole name bold
     return [_NamePart(name, true)];
+  }
+
+  Widget _buildCoachImage(String? imageUrl) {
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return Container(
+        color: Colors.grey[300],
+        child: Icon(Icons.person, color: Colors.grey[600], size: 30),
+      );
+    }
+
+    // Check if it's a network URL or asset path
+    final uri = Uri.tryParse(imageUrl);
+    if (uri != null && uri.hasScheme) {
+      // Network image
+      return Image.network(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[300],
+            child: Icon(Icons.person, color: Colors.grey[600], size: 30),
+          );
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return Container(
+            color: Colors.grey[300],
+            child: Center(
+              child: CircularProgressIndicator(
+                value:
+                    loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+              ),
+            ),
+          );
+        },
+      );
+    } else {
+      // Asset image
+      return Image.asset(
+        imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: Colors.grey[300],
+            child: Icon(Icons.person, color: Colors.grey[600], size: 30),
+          );
+        },
+      );
+    }
   }
 }
 

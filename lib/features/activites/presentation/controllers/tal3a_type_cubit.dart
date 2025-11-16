@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'tal3a_type_state.dart';
+import '../../data/models/training_mode_model.dart';
 
 class Tal3aTypeCubit extends Cubit<Tal3aTypeState> {
   Tal3aTypeCubit() : super(Tal3aTypeState(status: Tal3aTypeStatus.initial));
@@ -48,7 +49,7 @@ class Tal3aTypeCubit extends Cubit<Tal3aTypeState> {
   }
 
   // Select Mode
-  void selectMode(String mode) {
+  void selectMode(TrainingModeModel mode) {
     emit(
       state.copyWith(
         status: Tal3aTypeStatus.success,

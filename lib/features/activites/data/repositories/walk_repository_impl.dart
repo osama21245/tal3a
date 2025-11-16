@@ -3,12 +3,14 @@ import '../models/walk_type_model.dart';
 import '../models/walk_gender_model.dart';
 import '../models/walk_friend_model.dart';
 import '../models/walk_time_model.dart';
+import '../models/walk_request_payload.dart';
 
 abstract class WalkRepository {
   Future<List<WalkTypeModel>> getWalkTypes();
   Future<List<WalkGenderModel>> getWalkGenders();
-  Future<List<WalkFriendModel>> getWalkFriends();
+  Future<List<WalkFriendModel>> getWalkFriends(String gender);
   Future<List<WalkTimeModel>> getWalkTimes();
+  Future<void> sendWalkRequest(WalkRequestPayload payload);
 }
 
 class WalkRepositoryImpl implements WalkRepository {
@@ -18,38 +20,27 @@ class WalkRepositoryImpl implements WalkRepository {
     : _remoteDataSource = remoteDataSource;
 
   @override
-  Future<List<WalkTypeModel>> getWalkTypes() async {
-    try {
-      return await _remoteDataSource.getWalkTypes();
-    } catch (e) {
-      throw Exception('Failed to get walk types: $e');
-    }
+  Future<List<WalkTypeModel>> getWalkTypes() {
+    return _remoteDataSource.getWalkTypes();
   }
 
   @override
-  Future<List<WalkGenderModel>> getWalkGenders() async {
-    try {
-      return await _remoteDataSource.getWalkGenders();
-    } catch (e) {
-      throw Exception('Failed to get walk genders: $e');
-    }
+  Future<List<WalkGenderModel>> getWalkGenders() {
+    return _remoteDataSource.getWalkGenders();
   }
 
   @override
-  Future<List<WalkFriendModel>> getWalkFriends() async {
-    try {
-      return await _remoteDataSource.getWalkFriends();
-    } catch (e) {
-      throw Exception('Failed to get walk friends: $e');
-    }
+  Future<List<WalkFriendModel>> getWalkFriends(String gender) {
+    return _remoteDataSource.getWalkFriends(gender);
   }
 
   @override
-  Future<List<WalkTimeModel>> getWalkTimes() async {
-    try {
-      return await _remoteDataSource.getWalkTimes();
-    } catch (e) {
-      throw Exception('Failed to get walk times: $e');
-    }
+  Future<List<WalkTimeModel>> getWalkTimes() {
+    return _remoteDataSource.getWalkTimes();
+  }
+
+  @override
+  Future<void> sendWalkRequest(WalkRequestPayload payload) {
+    return _remoteDataSource.sendWalkRequest(payload);
   }
 }

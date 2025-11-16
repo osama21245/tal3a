@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tal3a/core/widgets/biking_activity_header_widget.dart';
 import 'package:tal3a/core/widgets/activity_content_widget.dart';
-import '../../controllers/biking_cubit.dart';
 import '../../widgets/biking/biking_choose_time_screen/biking_choose_time_form_widget.dart';
 
 class BikingChooseTimeScreen extends StatelessWidget {
@@ -14,12 +12,11 @@ class BikingChooseTimeScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          BikingActivityHeaderWidget(
+          const BikingActivityHeaderWidget(
             title: 'Choose Tal3a Type',
             showTal3aType: true,
             showProgressBar: true,
-            activeSteps: 4,
-            onBackPressed: () => Navigator.of(context).pop(),
+            activeSteps: 5,
           ),
           ActivityContentWidget(
             screenHeight: screenHeight,

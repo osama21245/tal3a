@@ -172,6 +172,17 @@ class NavigationHelper {
     );
   }
 
+  static void goToBikingChooseLocation(
+    BuildContext context, {
+    required BikingCubit cubit,
+  }) {
+    Navigator.pushNamed(
+      context,
+      Routes.bikingChooseLocationScreen,
+      arguments: cubit,
+    );
+  }
+
   static void goToBikingChooseTime(
     BuildContext context, {
     required BikingCubit cubit,

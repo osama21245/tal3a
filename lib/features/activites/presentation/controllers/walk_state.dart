@@ -4,9 +4,12 @@ import '../../data/models/walk_type_model.dart';
 import '../../data/models/walk_gender_model.dart';
 import '../../data/models/walk_friend_model.dart';
 import '../../data/models/walk_time_model.dart';
+import '../../data/models/walk_location_model.dart';
 import '../../data/models/group_type_model.dart';
 import '../../data/models/group_location_model.dart';
 import '../../data/models/group_time_model.dart';
+import '../../data/models/group_tal3a_location_model.dart';
+import '../../data/models/group_tal3a_detail_model.dart';
 
 enum WalkStatus { initial, loading, success, error }
 
@@ -46,6 +49,7 @@ class WalkState {
   final WalkGenderModel? selectedWalkGender;
   final WalkFriendModel? selectedWalkFriend;
   final WalkTimeModel? selectedWalkTime;
+  final WalkLocationModel? selectedWalkLocation;
   final int currentStep;
   final List<WalkNavigationNode> navigationHistory;
 
@@ -54,6 +58,7 @@ class WalkState {
   final List<WalkGenderModel> walkGenders;
   final List<WalkFriendModel> walkFriends;
   final List<WalkTimeModel> walkTimes;
+  final List<WalkLocationModel> walkLocations;
 
   // Group data (when user selects "Group" walk type)
   final GroupTypeModel? selectedGroupType;
@@ -62,6 +67,9 @@ class WalkState {
   final List<GroupTypeModel> groupTypes;
   final List<GroupLocationModel> groupLocations;
   final List<GroupTimeModel> groupTimes;
+  // Group tal3a data (from API)
+  final List<GroupTal3aLocationModel> groupTal3aLocations;
+  final GroupTal3aDetailModel? selectedGroupTal3aDetail;
 
   WalkState({
     required this.status,
@@ -70,12 +78,14 @@ class WalkState {
     this.selectedWalkGender,
     this.selectedWalkFriend,
     this.selectedWalkTime,
+    this.selectedWalkLocation,
     this.currentStep = 0,
     this.navigationHistory = const [],
     this.walkTypes = const [],
     this.walkGenders = const [],
     this.walkFriends = const [],
     this.walkTimes = const [],
+    this.walkLocations = const [],
     // Group data
     this.selectedGroupType,
     this.selectedGroupLocation,
@@ -83,6 +93,8 @@ class WalkState {
     this.groupTypes = const [],
     this.groupLocations = const [],
     this.groupTimes = const [],
+    this.groupTal3aLocations = const [],
+    this.selectedGroupTal3aDetail,
   });
 
   WalkState copyWith({
@@ -92,12 +104,14 @@ class WalkState {
     WalkGenderModel? selectedWalkGender,
     WalkFriendModel? selectedWalkFriend,
     WalkTimeModel? selectedWalkTime,
+    WalkLocationModel? selectedWalkLocation,
     int? currentStep,
     List<WalkNavigationNode>? navigationHistory,
     List<WalkTypeModel>? walkTypes,
     List<WalkGenderModel>? walkGenders,
     List<WalkFriendModel>? walkFriends,
     List<WalkTimeModel>? walkTimes,
+    List<WalkLocationModel>? walkLocations,
     // Group data
     GroupTypeModel? selectedGroupType,
     GroupLocationModel? selectedGroupLocation,
@@ -105,6 +119,8 @@ class WalkState {
     List<GroupTypeModel>? groupTypes,
     List<GroupLocationModel>? groupLocations,
     List<GroupTimeModel>? groupTimes,
+    List<GroupTal3aLocationModel>? groupTal3aLocations,
+    GroupTal3aDetailModel? selectedGroupTal3aDetail,
   }) {
     return WalkState(
       status: status ?? this.status,
@@ -113,12 +129,14 @@ class WalkState {
       selectedWalkGender: selectedWalkGender ?? this.selectedWalkGender,
       selectedWalkFriend: selectedWalkFriend ?? this.selectedWalkFriend,
       selectedWalkTime: selectedWalkTime ?? this.selectedWalkTime,
+      selectedWalkLocation: selectedWalkLocation ?? this.selectedWalkLocation,
       currentStep: currentStep ?? this.currentStep,
       navigationHistory: navigationHistory ?? this.navigationHistory,
       walkTypes: walkTypes ?? this.walkTypes,
       walkGenders: walkGenders ?? this.walkGenders,
       walkFriends: walkFriends ?? this.walkFriends,
       walkTimes: walkTimes ?? this.walkTimes,
+      walkLocations: walkLocations ?? this.walkLocations,
       // Group data
       selectedGroupType: selectedGroupType ?? this.selectedGroupType,
       selectedGroupLocation:
@@ -127,6 +145,9 @@ class WalkState {
       groupTypes: groupTypes ?? this.groupTypes,
       groupLocations: groupLocations ?? this.groupLocations,
       groupTimes: groupTimes ?? this.groupTimes,
+      groupTal3aLocations: groupTal3aLocations ?? this.groupTal3aLocations,
+      selectedGroupTal3aDetail:
+          selectedGroupTal3aDetail ?? this.selectedGroupTal3aDetail,
     );
   }
 
@@ -139,5 +160,5 @@ class WalkState {
 
   @override
   String toString() =>
-      'WalkState(status: $status, error: $error, selectedWalkType: $selectedWalkType, selectedWalkGender: $selectedWalkGender, selectedWalkFriend: $selectedWalkFriend, selectedWalkTime: $selectedWalkTime, currentStep: $currentStep, navigationHistory: ${nodeNames})';
+      'WalkState(status: $status, error: $error, selectedWalkType: $selectedWalkType, selectedWalkGender: $selectedWalkGender, selectedWalkFriend: $selectedWalkFriend, selectedWalkLocation: $selectedWalkLocation, selectedWalkTime: $selectedWalkTime, currentStep: $currentStep, navigationHistory: ${nodeNames})';
 }

@@ -9,7 +9,7 @@ import '../../../../../../core/utils/animation_helper.dart';
 import '../../../controllers/walk_cubit.dart';
 import '../../../controllers/walk_state.dart';
 
-import '../../../screens/walk/walk_choose_time_screen.dart';
+import '../../../screens/walk/walk_choose_location_screen.dart';
 
 class WalkChooseFriendFormWidget extends StatefulWidget {
   const WalkChooseFriendFormWidget({super.key});
@@ -27,8 +27,10 @@ class _WalkChooseFriendFormWidgetState
   @override
   void initState() {
     super.initState();
-    // Load data using cubit
-    context.read<WalkCubit>().loadWalkFriends();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<WalkCubit>().loadWalkFriends();
+    });
   }
 
   void _selectWalkFriend(WalkFriendModel walkFriend) {
@@ -56,7 +58,7 @@ class _WalkChooseFriendFormWidgetState
           builder:
               (context) => BlocProvider.value(
                 value: walkCubit,
-                child: const WalkChooseTimeScreen(),
+                child: const WalkChooseLocationScreen(),
               ),
         ),
       );
@@ -77,6 +79,12 @@ class _WalkChooseFriendFormWidgetState
           return Center(child: Text('Error: ${state.error}'));
         }
 
+        if (state.walkFriends.isEmpty) {
+          return const Center(
+            child: Text('No friends found for the selected preference.'),
+          );
+        }
+
         return Stack(
           children: [
             // Scrollable content area - takes full space
@@ -91,6 +99,9 @@ class _WalkChooseFriendFormWidgetState
               itemBuilder: (context, index) {
                 final friend = state.walkFriends[index];
                 final isSelected = _selectedWalkFriend?.id == friend.id;
+                final ageText = friend.age.isNotEmpty ? friend.age : '--';
+                final weightText =
+                    friend.weight.isNotEmpty ? friend.weight : '--';
 
                 return AnimationHelper.cardAnimation(
                   index: index,
@@ -135,16 +146,11 @@ class _WalkChooseFriendFormWidgetState
                                 decoration: BoxDecoration(
                                   color: Colors.white,
                                   borderRadius: BorderRadius.circular(12.26),
-                                  image:
-                                      friend.imageUrl != null
-                                          ? DecorationImage(
-                                            image: AssetImage(friend.imageUrl!),
-                                            fit: BoxFit.cover,
-                                          )
-                                          : null,
+                                  image: _buildFriendImage(friend.imageUrl),
                                 ),
                                 child:
-                                    friend.imageUrl == null
+                                    friend.imageUrl == null ||
+                                            friend.imageUrl!.isEmpty
                                         ? const Icon(
                                           Icons.person,
                                           color:
@@ -175,7 +181,7 @@ class _WalkChooseFriendFormWidgetState
                                     Row(
                                       children: [
                                         Text(
-                                          friend.age,
+                                          ageText,
                                           style:
                                               isSelected
                                                   ? AppTextStyles
@@ -196,7 +202,7 @@ class _WalkChooseFriendFormWidgetState
 
                                         const SizedBox(width: 20),
                                         Text(
-                                          friend.weight,
+                                          weightText,
                                           style:
                                               isSelected
                                                   ? AppTextStyles
@@ -250,4 +256,26 @@ class _WalkChooseFriendFormWidgetState
       },
     );
   }
+}
+
+DecorationImage? _buildFriendImage(String? imageUrl) {
+  final provider = _createImageProvider(imageUrl);
+  if (provider == null) {
+    return null;
+  }
+
+  return DecorationImage(image: provider, fit: BoxFit.cover);
+}
+
+ImageProvider? _createImageProvider(String? imageUrl) {
+  if (imageUrl == null || imageUrl.isEmpty) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(imageUrl);
+  if (uri != null && uri.hasScheme) {
+    return NetworkImage(imageUrl);
+  }
+
+  return AssetImage(imageUrl);
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../../../core/const/color_pallete.dart';
 import '../../../../../../core/const/text_style.dart';
 import '../../../../../../core/widgets/widgets.dart';
@@ -8,81 +8,56 @@ import '../../../../../../core/utils/animation_helper.dart';
 import '../../../controllers/biking_cubit.dart';
 import '../../../controllers/biking_state.dart';
 import '../../../../data/models/biking_friend_model.dart';
-import '../../../screens/biking/biking_choose_time_screen.dart';
+import '../../../screens/biking/biking_choose_location_screen.dart';
 
-class BikingChooseFriendFormWidget extends StatelessWidget {
+class BikingChooseFriendFormWidget extends StatefulWidget {
   const BikingChooseFriendFormWidget({super.key});
 
-  // Static biking friends data
-  static const List<BikingFriendModel> _bikingFriends = [
-    BikingFriendModel(
-      id: 'friend4',
-      name: 'Capt.Ahmed M.',
-      age: 25,
-      weight: 70,
-      imageUrl: 'assets/images/fitness_partner.png',
-    ),
-    BikingFriendModel(
-      id: 'friend6',
-      name: 'Capt.Ahmed M.',
-      age: 25,
-      weight: 70,
-      imageUrl: 'assets/images/fitness_partner.png',
-    ),
-    BikingFriendModel(
-      id: 'friend3',
-      name: 'Capt.Ahmed M.',
-      age: 25,
-      weight: 70,
-      imageUrl: 'assets/images/fitness_partner.png',
-    ),
-    // BikingFriendModel(
-    //   id: 'friend5',
-    //   name: 'Capt.Ahmed M.',
-    //   age: 25,
-    //   weight: 70,
-    //   imageUrl: 'assets/images/fitness_partner.png',
-    // ),
-    // BikingFriendModel(
-    //   id: 'friend12',
-    //   name: 'Capt.Ahmed M.',
-    //   age: 25,
-    //   weight: 70,
-    //   imageUrl: 'assets/images/fitness_partner.png',
-    // ),
-    // BikingFriendModel(
-    //   id: 'friend1',
-    //   name: 'Capt.Ahmed M.',
-    //   age: 25,
-    //   weight: 70,
-    //   imageUrl: 'assets/images/fitness_partner.png',
-    // ),
-    // BikingFriendModel(
-    //   id: 'friend2',
-    //   name: 'Capt.Sara A.',
-    //   age: 23,
-    //   weight: 55,
-    //   imageUrl: 'assets/images/certified_coaches.png',
-    // ),
-  ];
+  @override
+  State<BikingChooseFriendFormWidget> createState() =>
+      _BikingChooseFriendFormWidgetState();
+}
 
-  void _selectBikingFriend(
-    BuildContext context,
-    BikingFriendModel bikingFriend,
-  ) {
-    context.read<BikingCubit>().selectBikingFriend(bikingFriend);
+class _BikingChooseFriendFormWidgetState
+    extends State<BikingChooseFriendFormWidget> {
+  BikingFriendModel? _selectedBikingFriend;
+  bool _isButtonEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<BikingCubit>().loadBikingFriends();
+    });
   }
 
-  void _continue(BuildContext context) {
-    final bikingCubit = context.read<BikingCubit>();
-    final selectedBikingFriend = bikingCubit.state.selectedBikingFriend;
-    if (selectedBikingFriend != null) {
+  void _selectBikingFriend(BikingFriendModel bikingFriend) {
+    setState(() {
+      _selectedBikingFriend = bikingFriend;
+      _isButtonEnabled = true;
+    });
+  }
+
+  void _continue() {
+    if (_isButtonEnabled && _selectedBikingFriend != null) {
+      // Update BikingCubit with selected biking friend
+      context.read<BikingCubit>().selectBikingFriend(_selectedBikingFriend!);
+
+      // Add navigation history
+      context.read<BikingCubit>().addNavigationNode(
+        'BikingChooseFriendScreen',
+        data: {'selectedBikingFriend': _selectedBikingFriend!.toJson()},
+      );
+
+      // Navigate to next screen
+      final bikingCubit = context.read<BikingCubit>();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder:
               (context) => BlocProvider.value(
                 value: bikingCubit,
-                child: const BikingChooseTimeScreen(),
+                child: const BikingChooseLocationScreen(),
               ),
         ),
       );
@@ -93,106 +68,162 @@ class BikingChooseFriendFormWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<BikingCubit, BikingState>(
       builder: (context, state) {
-        final selectedBikingFriend = state.selectedBikingFriend;
+        if (state.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(color: ColorPalette.primaryBlue),
+          );
+        }
+
+        if (state.error != null) {
+          return Center(child: Text('Error: ${state.error}'));
+        }
+
+        if (state.bikingFriends.isEmpty) {
+          return const Center(
+            child: Text('No friends found for the selected preference.'),
+          );
+        }
 
         return Stack(
           children: [
             // Scrollable content area - takes full space
             ListView.builder(
-              padding: const EdgeInsets.only(left: 6, right: 6, top: 9),
-              itemCount: _bikingFriends.length,
+              padding: const EdgeInsets.only(
+                left: 6,
+                right: 6,
+                top: 9,
+                bottom: 100,
+              ),
+              itemCount: state.bikingFriends.length,
               itemBuilder: (context, index) {
-                final bikingFriend = _bikingFriends[index];
-                final isSelected = selectedBikingFriend?.id == bikingFriend.id;
+                final friend = state.bikingFriends[index];
+                final isSelected = _selectedBikingFriend?.id == friend.id;
 
                 return AnimationHelper.cardAnimation(
                   index: index,
-                  child: GestureDetector(
-                    onTap: () => _selectBikingFriend(context, bikingFriend),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      margin: const EdgeInsets.only(bottom: 15),
-                      decoration: BoxDecoration(
-                        color:
-                            isSelected
-                                ? ColorPalette.coachCardSelected
-                                : ColorPalette.cardGrey,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow:
-                            isSelected
-                                ? [
-                                  BoxShadow(
-                                    color: ColorPalette.coachCardSelected
-                                        .withOpacity(0.35),
-                                    offset: const Offset(0, 0),
-                                    blurRadius: 0,
-                                    spreadRadius: 4,
-                                  ),
-                                ]
-                                : null,
-                      ),
-                      child: Row(
-                        children: [
-                          // Friend Image
-                          Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(14),
-                                bottomLeft: Radius.circular(14),
-                              ),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(14),
-                                bottomLeft: Radius.circular(14),
-                              ),
-                              child: Image.asset(
-                                bikingFriend.imageUrl!,
-                                fit: BoxFit.cover,
-                              ),
-                            ),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: GestureDetector(
+                      onTap: () => _selectBikingFriend(friend),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        width: double.infinity,
+                        height: 69,
+                        decoration: BoxDecoration(
+                          color:
+                              isSelected
+                                  ? ColorPalette.friendCardSelected
+                                  : ColorPalette.friendCardUnselected,
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow:
+                              isSelected
+                                  ? [
+                                    BoxShadow(
+                                      color: ColorPalette.friendCardSelected
+                                          .withOpacity(0.35),
+                                      blurRadius: 0,
+                                      spreadRadius: 3,
+                                    ),
+                                  ]
+                                  : null,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 11,
+                            vertical: 8,
                           ),
+                          child: Row(
+                            children: [
+                              // Profile Image
+                              Container(
+                                width: 53,
+                                height: 53,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12.26),
+                                  image: _buildFriendImage(friend.imageUrl),
+                                ),
+                                child:
+                                    friend.imageUrl == null ||
+                                            friend.imageUrl!.isEmpty
+                                        ? const Icon(
+                                          Icons.person,
+                                          color:
+                                              ColorPalette.friendCardIconGrey,
+                                          size: 24,
+                                        )
+                                        : null,
+                              ),
 
-                          // Friend Info
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    bikingFriend.name,
-                                    style: AppTextStyles.coachNameBoldStyle
-                                        .copyWith(
-                                          color:
+                              const SizedBox(width: 11),
+
+                              // Friend Details
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      friend.name,
+                                      style:
+                                          isSelected
+                                              ? AppTextStyles
+                                                  .friendCardNameSelectedStyle
+                                              : AppTextStyles
+                                                  .friendCardNameStyle,
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          friend.age.toString(),
+                                          style:
                                               isSelected
-                                                  ? Colors.white
-                                                  : ColorPalette
-                                                      .activityTextGrey,
+                                                  ? AppTextStyles
+                                                      .friendCardDetailsSelectedStyle
+                                                  : AppTextStyles
+                                                      .friendCardDetailsStyle,
                                         ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    '${bikingFriend.age} years • ${bikingFriend.weight}kg',
-                                    style: AppTextStyles.coachTitleSelectedStyle
-                                        .copyWith(
-                                          color:
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'activities.years'.tr(),
+                                          style:
                                               isSelected
-                                                  ? Colors.white.withOpacity(
-                                                    0.8,
-                                                  )
-                                                  : ColorPalette
-                                                      .activityTextGrey,
+                                                  ? AppTextStyles
+                                                      .friendCardUnitSelectedStyle
+                                                  : AppTextStyles
+                                                      .friendCardUnitStyle,
                                         ),
-                                  ),
-                                ],
+
+                                        const SizedBox(width: 20),
+                                        Text(
+                                          friend.weight.toString(),
+                                          style:
+                                              isSelected
+                                                  ? AppTextStyles
+                                                      .friendCardDetailsSelectedStyle
+                                                  : AppTextStyles
+                                                      .friendCardDetailsStyle,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'activities.kg'.tr(),
+                                          style:
+                                              isSelected
+                                                  ? AppTextStyles
+                                                      .friendCardUnitSelectedStyle
+                                                  : AppTextStyles
+                                                      .friendCardUnitStyle,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
@@ -208,15 +239,12 @@ class BikingChooseFriendFormWidget extends StatelessWidget {
               child: AnimationHelper.buttonAnimation(
                 child: SafeArea(
                   child: PrimaryButtonWidget(
-                    text: 'Continue',
-                    onPressed:
-                        selectedBikingFriend != null
-                            ? () => _continue(context)
-                            : null,
-                    isEnabled: selectedBikingFriend != null,
+                    text: 'common.continue'.tr(),
+                    onPressed: _isButtonEnabled ? _continue : null,
+                    isEnabled: _isButtonEnabled,
                   ),
                 ),
-                isVisible: selectedBikingFriend != null,
+                isVisible: _selectedBikingFriend != null,
               ),
             ),
           ],
@@ -224,4 +252,26 @@ class BikingChooseFriendFormWidget extends StatelessWidget {
       },
     );
   }
+}
+
+DecorationImage? _buildFriendImage(String? imageUrl) {
+  final provider = _createImageProvider(imageUrl);
+  if (provider == null) {
+    return null;
+  }
+
+  return DecorationImage(image: provider, fit: BoxFit.cover);
+}
+
+ImageProvider? _createImageProvider(String? imageUrl) {
+  if (imageUrl == null || imageUrl.isEmpty) {
+    return null;
+  }
+
+  final uri = Uri.tryParse(imageUrl);
+  if (uri != null && uri.hasScheme) {
+    return NetworkImage(imageUrl);
+  }
+
+  return AssetImage(imageUrl);
 }

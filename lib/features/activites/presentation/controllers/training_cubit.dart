@@ -4,9 +4,21 @@ import '../../data/models/walk_type_model.dart';
 import '../../data/models/walk_gender_model.dart';
 import '../../data/models/walk_friend_model.dart';
 import '../../data/models/walk_time_model.dart';
+import '../../data/models/training_mode_model.dart';
+import '../../data/models/training_video_series_model.dart';
+import '../../data/repositories/training_repository_impl.dart';
+import '../../data/datasources/training_remote_datasource.dart';
 
 class TrainingCubit extends Cubit<Tal3aTypeState> {
-  TrainingCubit() : super(Tal3aTypeState(status: Tal3aTypeStatus.initial));
+  final TrainingRepository _trainingRepository;
+
+  TrainingCubit({TrainingRepository? trainingRepository})
+    : _trainingRepository =
+          trainingRepository ??
+          TrainingRepositoryImpl(
+            remoteDataSource: TrainingRemoteDataSourceImpl(),
+          ),
+      super(Tal3aTypeState(status: Tal3aTypeStatus.initial));
 
   // Navigation History Management
   void addNavigationNode(String screenName, {Map<String, dynamic>? data}) {
@@ -50,7 +62,7 @@ class TrainingCubit extends Cubit<Tal3aTypeState> {
     );
   }
 
-  void selectMode(String mode) {
+  void selectMode(TrainingModeModel mode) {
     emit(
       state.copyWith(
         status: Tal3aTypeStatus.success,
@@ -58,6 +70,10 @@ class TrainingCubit extends Cubit<Tal3aTypeState> {
         currentStep: 3,
       ),
     );
+  }
+
+  void clearMode() {
+    emit(state.copyWith(selectedMode: null, currentStep: 2));
   }
 
   // Update coach data with additional information
@@ -93,6 +109,170 @@ class TrainingCubit extends Cubit<Tal3aTypeState> {
             state.selectedMode != null;
       default:
         return false;
+    }
+  }
+
+  // Data loading methods
+  Future<void> loadCoaches() async {
+    try {
+      emit(state.copyWith(status: Tal3aTypeStatus.loading));
+      final coaches = await _trainingRepository.getCoaches();
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.success,
+          coaches: coaches,
+          // Preserve existing training modes when loading coaches
+          trainingModes: state.trainingModes,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.error,
+          error: e.toString(),
+          // Preserve existing data on error
+          coaches: state.coaches,
+          trainingModes: state.trainingModes,
+        ),
+      );
+    }
+  }
+
+  Future<void> loadCoachDetail(String coachId) async {
+    try {
+      emit(state.copyWith(status: Tal3aTypeStatus.loading));
+      final trainingModes = await _trainingRepository.getCoachDetail(coachId);
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.success,
+          trainingModes: trainingModes,
+          // Preserve existing coaches list when loading coach detail
+          coaches: state.coaches,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.error,
+          error: e.toString(),
+          // Preserve existing data on error
+          coaches: state.coaches,
+          trainingModes: state.trainingModes,
+        ),
+      );
+    }
+  }
+
+  Future<void> loadVideoSeries({
+    required String coachId,
+    required String trainingModeId,
+  }) async {
+    try {
+      emit(state.copyWith(status: Tal3aTypeStatus.loading));
+      final videoSeries = await _trainingRepository.getVideoSeries(
+        coachId: coachId,
+        trainingModeId: trainingModeId,
+      );
+      // Set first video as selected by default
+      final selectedVideo = videoSeries.isNotEmpty ? videoSeries.first : null;
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.success,
+          videoSeries: videoSeries,
+          selectedVideo: selectedVideo,
+          // Preserve existing data
+          coaches: state.coaches,
+          trainingModes: state.trainingModes,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.error,
+          error: e.toString(),
+          // Preserve existing data on error
+          coaches: state.coaches,
+          trainingModes: state.trainingModes,
+          videoSeries: state.videoSeries,
+        ),
+      );
+    }
+  }
+
+  void selectVideo(TrainingVideoSeriesModel video) {
+    emit(
+      state.copyWith(
+        selectedVideo: video,
+        // Preserve existing data
+        coaches: state.coaches,
+        trainingModes: state.trainingModes,
+        videoSeries: state.videoSeries,
+      ),
+    );
+  }
+
+  Future<void> rateCoach({
+    required String coachId,
+    required int rating,
+    required String comment,
+  }) async {
+    try {
+      emit(state.copyWith(status: Tal3aTypeStatus.loading));
+      final result = await _trainingRepository.rateCoach(
+        coachId: coachId,
+        rating: rating,
+        comment: comment,
+      );
+
+      // Update coach rating in the coaches list
+      final updatedCoaches =
+          state.coaches.map((coach) {
+            if (coach.id == coachId) {
+              return coach.copyWith(
+                rating:
+                    (result['averageRating'] as num?)?.toDouble() ??
+                    coach.rating,
+                totalRatings:
+                    result['totalRatings'] as int? ?? coach.totalRatings,
+              );
+            }
+            return coach;
+          }).toList();
+
+      // Update selected coach if it's the same
+      CoachData? updatedSelectedCoach = state.selectedCoach;
+      if (updatedSelectedCoach?.id == coachId) {
+        updatedSelectedCoach = updatedSelectedCoach!.copyWith(
+          rating:
+              (result['averageRating'] as num?)?.toDouble() ??
+              updatedSelectedCoach.rating,
+          totalRatings:
+              result['totalRatings'] as int? ??
+              updatedSelectedCoach.totalRatings,
+        );
+      }
+
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.success,
+          coaches: updatedCoaches,
+          selectedCoach: updatedSelectedCoach,
+          // Preserve existing data
+          trainingModes: state.trainingModes,
+          videoSeries: state.videoSeries,
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: Tal3aTypeStatus.error,
+          error: e.toString(),
+          // Preserve existing data on error
+          coaches: state.coaches,
+          trainingModes: state.trainingModes,
+          videoSeries: state.videoSeries,
+        ),
+      );
     }
   }
 

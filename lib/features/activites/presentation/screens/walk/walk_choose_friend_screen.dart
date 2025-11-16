@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tal3a/core/widgets/walk_activity_header_widget.dart';
 import 'package:tal3a/core/widgets/activity_content_widget.dart';
-import '../../controllers/walk_cubit.dart';
-import '../../controllers/walk_state.dart';
 import '../../widgets/walk/walk_choose_friend_screen/walk_choose_friend_form_widget.dart';
 
 class WalkChooseFriendScreen extends StatelessWidget {
@@ -21,6 +18,7 @@ class WalkChooseFriendScreen extends StatelessWidget {
             showTal3aType: true,
             showProgressBar: true,
             activeSteps: 3,
+            totalSteps: 5,
           ),
           ActivityContentWidget(
             screenHeight: screenHeight,

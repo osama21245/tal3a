@@ -35,6 +35,7 @@ class BikingActivityHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     return Container(
       height: screenHeight,
       width: double.infinity,
@@ -44,7 +45,7 @@ class BikingActivityHeaderWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h), // Top padding
+            SizedBox(height: statusBarHeight - 30), // Top padding
             // Back Button
             GestureDetector(
               onTap: () {
@@ -454,7 +455,7 @@ class BikingActivityHeaderWidget extends StatelessWidget {
               ),
               child:
                   bikingFriendData.imageUrl != null
-                      ? Image.asset(
+                      ? Image.network(
                         bikingFriendData.imageUrl!,
                         fit: BoxFit.cover,
                       )

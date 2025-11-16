@@ -20,6 +20,7 @@ class WalkActivityHeaderWidget extends StatelessWidget {
   final bool showTal3aType;
   final bool showProgressBar;
   final int activeSteps;
+  final int totalSteps;
   final VoidCallback? onBackPressed;
 
   const WalkActivityHeaderWidget({
@@ -29,12 +30,14 @@ class WalkActivityHeaderWidget extends StatelessWidget {
     this.showTal3aType = false,
     this.showProgressBar = false,
     this.activeSteps = 1,
+    this.totalSteps = 4,
     this.onBackPressed,
   });
 
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     return Container(
       height: screenHeight,
       width: double.infinity,
@@ -44,7 +47,7 @@ class WalkActivityHeaderWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h), // Top padding
+            SizedBox(height: statusBarHeight - 30), // Top padding
             // Back Button
             GestureDetector(
               onTap: () {
@@ -75,66 +78,7 @@ class WalkActivityHeaderWidget extends StatelessWidget {
             // Progress Indicators (conditionally rendered)
             Opacity(
               opacity: showProgressBar ? 1.0 : 0.0,
-              child: Row(
-                children: [
-                  // Active step indicator (blue) - Vector 1
-                  Expanded(
-                    child: Container(
-                      height: 2.h,
-                      decoration: BoxDecoration(
-                        color:
-                            activeSteps >= 1
-                                ? ColorPalette.progressActive
-                                : ColorPalette.progressInactive,
-                        borderRadius: BorderRadius.circular(23),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  // Active step indicator - Vector 2
-                  Expanded(
-                    child: Container(
-                      height: 2.h,
-                      decoration: BoxDecoration(
-                        color:
-                            activeSteps >= 2
-                                ? ColorPalette.progressActive
-                                : ColorPalette.progressInactive,
-                        borderRadius: BorderRadius.circular(23),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  // Active step indicator - Vector 3
-                  Expanded(
-                    child: Container(
-                      height: 2.h,
-                      decoration: BoxDecoration(
-                        color:
-                            activeSteps >= 3
-                                ? ColorPalette.progressActive
-                                : ColorPalette.progressInactive,
-                        borderRadius: BorderRadius.circular(23),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-
-                  // Active step indicator - Vector 4
-                  Expanded(
-                    child: Container(
-                      height: 2.h,
-                      decoration: BoxDecoration(
-                        color:
-                            activeSteps >= 4
-                                ? ColorPalette.progressActive
-                                : ColorPalette.progressInactive,
-                        borderRadius: BorderRadius.circular(23),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+              child: Row(children: _buildProgressIndicators()),
             ),
             SizedBox(height: 29.h),
 
@@ -149,6 +93,33 @@ class WalkActivityHeaderWidget extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  List<Widget> _buildProgressIndicators() {
+    final indicators = <Widget>[];
+
+    for (var index = 0; index < totalSteps; index++) {
+      indicators.add(
+        Expanded(
+          child: Container(
+            height: 2.h,
+            decoration: BoxDecoration(
+              color:
+                  activeSteps >= index + 1
+                      ? ColorPalette.progressActive
+                      : ColorPalette.progressInactive,
+              borderRadius: BorderRadius.circular(23),
+            ),
+          ),
+        ),
+      );
+
+      if (index < totalSteps - 1) {
+        indicators.add(const SizedBox(width: 5));
+      }
+    }
+
+    return indicators;
   }
 
   Widget _buildTal3aTypeSection() {
@@ -454,7 +425,10 @@ class WalkActivityHeaderWidget extends StatelessWidget {
               ),
               child:
                   walkFriendData.imageUrl != null
-                      ? Image.asset(walkFriendData.imageUrl!, fit: BoxFit.cover)
+                      ? Image.network(
+                        walkFriendData.imageUrl!,
+                        fit: BoxFit.cover,
+                      )
                       : Container(
                         color: Colors.grey[300],
                         child: Icon(

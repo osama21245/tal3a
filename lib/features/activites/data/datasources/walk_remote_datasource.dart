@@ -1,23 +1,28 @@
+import '../../../../core/constants/api_constants.dart';
+import '../../../../core/exceptions/app_exceptions.dart';
+import '../../../../core/network/api_client.dart';
 import '../models/walk_type_model.dart';
 import '../models/walk_gender_model.dart';
 import '../models/walk_friend_model.dart';
 import '../models/walk_time_model.dart';
+import '../models/walk_request_payload.dart';
 
 abstract class WalkRemoteDataSource {
   Future<List<WalkTypeModel>> getWalkTypes();
   Future<List<WalkGenderModel>> getWalkGenders();
-  Future<List<WalkFriendModel>> getWalkFriends();
+  Future<List<WalkFriendModel>> getWalkFriends(String gender);
   Future<List<WalkTimeModel>> getWalkTimes();
+  Future<void> sendWalkRequest(WalkRequestPayload payload);
 }
 
 class WalkRemoteDataSourceImpl implements WalkRemoteDataSource {
-  // Simulate network delay
-  static const Duration _networkDelay = Duration(milliseconds: 500);
+  final ApiClient _apiClient;
+
+  WalkRemoteDataSourceImpl({ApiClient? apiClient})
+    : _apiClient = apiClient ?? ApiClient();
 
   @override
   Future<List<WalkTypeModel>> getWalkTypes() async {
-    await Future.delayed(_networkDelay);
-
     // Mock data based on Figma design - "How Do You Want to Walk?"
     return [
       const WalkTypeModel(id: 'one_on_one', name: '1-on-1'),
@@ -27,8 +32,6 @@ class WalkRemoteDataSourceImpl implements WalkRemoteDataSource {
 
   @override
   Future<List<WalkGenderModel>> getWalkGenders() async {
-    await Future.delayed(_networkDelay);
-
     // Mock data based on Figma design - "With Who?"
     return [
       const WalkGenderModel(
@@ -45,61 +48,123 @@ class WalkRemoteDataSourceImpl implements WalkRemoteDataSource {
   }
 
   @override
-  Future<List<WalkFriendModel>> getWalkFriends() async {
-    await Future.delayed(_networkDelay);
+  Future<List<WalkFriendModel>> getWalkFriends(String gender) async {
+    final response = await _apiClient.getAuthenticated(
+      ApiConstants.getUserByGenderEndpoint,
+      queryParams: {'Gender': gender},
+    );
 
-    // Mock data based on Figma design - friend selection with name, age, weight
+    if (response.isSuccess) {
+      final decodedResponse = Map<String, dynamic>.from(
+        response.data as Map<dynamic, dynamic>,
+      );
+      final status = decodedResponse['status'] as bool? ?? false;
+
+      if (!status) {
+        final message = decodedResponse['message']?.toString();
+        throw ServerException(
+          message: message ?? 'Request returned unsuccessful status',
+          statusCode: response.statusCode,
+        );
+      }
+
+      final users =
+          (decodedResponse['users'] as List<dynamic>? ?? [])
+              .whereType<Map<String, dynamic>>()
+              .map(WalkFriendModel.fromJson)
+              .toList();
+
+      return users;
+    }
+
+    throw ServerException(
+      message: response.error ?? 'Failed to load walk friends',
+      statusCode: response.statusCode,
+    );
+  }
+
+  @override
+  Future<List<WalkTimeModel>> getWalkTimes() async {
+    // Mock data based on Figma design - time selection
+    final baseDate = DateTime.now().add(const Duration(days: 1));
+
     return [
-      const WalkFriendModel(
-        id: 'friend_1',
-        name: 'George Mikaiel',
-        age: '20',
-        weight: '80',
-        imageUrl: 'assets/images/fitness_partner.png',
+      WalkTimeModel(
+        id: 'time_1',
+        timeSlot: '05:30 AM',
+        isAvailable: true,
+        scheduledAt: DateTime(
+          baseDate.year,
+          baseDate.month,
+          baseDate.day,
+          5,
+          30,
+        ),
       ),
-      const WalkFriendModel(
-        id: 'friend_2',
-        name: 'George Mikaiel',
-        age: '20',
-        weight: '80',
-        imageUrl: 'assets/images/fitness_partner.png',
+      WalkTimeModel(
+        id: 'time_2',
+        timeSlot: '06:00 AM',
+        isAvailable: true,
+        scheduledAt: DateTime(
+          baseDate.year,
+          baseDate.month,
+          baseDate.day,
+          6,
+          0,
+        ),
       ),
-      const WalkFriendModel(
-        id: 'friend_3',
-        name: 'George Mikaiel',
-        age: '20',
-        weight: '80',
-        imageUrl: 'assets/images/fitness_partner.png',
+      WalkTimeModel(
+        id: 'time_3',
+        timeSlot: '06:30 AM',
+        isAvailable: true,
+        scheduledAt: DateTime(
+          baseDate.year,
+          baseDate.month,
+          baseDate.day,
+          6,
+          30,
+        ),
+      ),
+      WalkTimeModel(
+        id: 'time_4',
+        timeSlot: '07:00 AM',
+        isAvailable: true,
+        scheduledAt: DateTime(
+          baseDate.year,
+          baseDate.month,
+          baseDate.day,
+          7,
+          0,
+        ),
       ),
     ];
   }
 
   @override
-  Future<List<WalkTimeModel>> getWalkTimes() async {
-    await Future.delayed(_networkDelay);
+  Future<void> sendWalkRequest(WalkRequestPayload payload) async {
+    final response = await _apiClient.postAuthenticated(
+      ApiConstants.sendWalkRequestEndpoint,
+      body: payload.toJson(),
+    );
 
-    // Mock data based on Figma design - time selection
-    return [
-      const WalkTimeModel(
-        id: 'time_1',
-        timeSlot: '05:30 AM',
-        isAvailable: true,
-      ),
-      const WalkTimeModel(
-        id: 'time_2',
-        timeSlot: '06:00 AM',
-        isAvailable: true,
-      ),
-      const WalkTimeModel(
-        id: 'time_3',
-        timeSlot: '06:30 AM',
-        isAvailable: true,
-      ),
-      const WalkTimeModel(
-        id: 'time_4',
-        timeSlot: '07:00 AM',
-        isAvailable: true,
-      ),
-    ];
+    if (response.isSuccess) {
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final status = data['status'] as bool? ?? true;
+        if (!status) {
+          throw ServerException(
+            message:
+                data['message']?.toString() ?? 'Failed to send walk request',
+            statusCode: response.statusCode,
+          );
+        }
+      }
+      return;
+    }
+
+    throw ServerException(
+      message: response.error ?? 'Failed to send walk request',
+      statusCode: response.statusCode,
+    );
   }
 }

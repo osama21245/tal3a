@@ -1,222 +1,290 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tal3a/core/const/color_pallete.dart';
 import 'package:tal3a/core/const/text_style.dart';
 import 'package:tal3a/core/widgets/primary_button_widget.dart';
-import 'package:tal3a/features/activites/data/models/biking_group_time_model.dart';
+import 'package:tal3a/features/activites/data/models/group_tal3a_detail_model.dart';
 import 'package:tal3a/features/activites/presentation/controllers/biking_cubit.dart';
 import 'package:tal3a/features/activites/presentation/controllers/biking_state.dart';
 import 'package:tal3a/core/utils/animation_helper.dart';
+import 'package:intl/intl.dart';
 
-class BikingGroupChooseTimeFormWidget extends StatelessWidget {
+class BikingGroupChooseTimeFormWidget extends StatefulWidget {
   const BikingGroupChooseTimeFormWidget({super.key});
 
-  // Static biking group times data
-  static const List<BikingGroupTimeModel> _bikingGroupTimes = [
-    BikingGroupTimeModel(
-      id: 'morning',
-      timeSlot: '6:00 AM',
-      description: 'Morning Group Bike',
-      date: 'Today',
-    ),
-    BikingGroupTimeModel(
-      id: 'evening',
-      timeSlot: '6:00 PM',
-      description: 'Evening Group Bike',
-      date: 'Today',
-    ),
-  ];
+  @override
+  State<BikingGroupChooseTimeFormWidget> createState() =>
+      _BikingGroupChooseTimeFormWidgetState();
+}
 
-  void _selectBikingGroupTime(
-    BuildContext context,
-    BikingGroupTimeModel bikingGroupTime,
-  ) {
-    context.read<BikingCubit>().selectBikingGroupTime(bikingGroupTime);
+class _BikingGroupChooseTimeFormWidgetState
+    extends State<BikingGroupChooseTimeFormWidget> {
+  GroupTal3aDetailTimeSlot? _selectedTimeSlot;
+
+  @override
+  void initState() {
+    super.initState();
+    // Time slots are already loaded from the location selection
   }
 
-  void _continue(BuildContext context) {
-    // Here you would typically navigate to a confirmation screen or complete the flow
-    final bikingCubit = context.read<BikingCubit>();
-    final state = bikingCubit.state;
+  void _selectTime(GroupTal3aDetailTimeSlot timeSlot) {
+    setState(() {
+      _selectedTimeSlot = timeSlot;
+    });
+  }
 
-    // Show completion dialog or navigate to next screen
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Biking Group Setup Complete!'),
-            content: Text(
-              'You have successfully set up your group biking session:\n'
-              'Type: ${state.selectedBikingType?.name}\n'
-              'Group Type: ${state.selectedBikingGroupType?.name}\n'
-              'Location: ${state.selectedBikingGroupLocation?.name}\n'
-              'Time: ${state.selectedBikingGroupTime?.timeSlot}',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                },
-                child: const Text('OK'),
-              ),
-            ],
-          ),
+  void _continue(BuildContext context) async {
+    final cubit = context.read<BikingCubit>();
+    final state = cubit.state;
+
+    if (_selectedTimeSlot == null || state.selectedGroupTal3aDetail == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a time slot'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Map group type ID to API format
+    String groupTypeApi = 'group_mix'; // default
+    if (state.selectedBikingGroupType != null) {
+      switch (state.selectedBikingGroupType!.id) {
+        case 'group_ma':
+          groupTypeApi = 'group_man';
+          break;
+        case 'group_wo':
+          groupTypeApi = 'group_woman';
+          break;
+        case 'mix_group':
+          groupTypeApi = 'group_mix';
+          break;
+      }
+    }
+
+    // Format date as "2025-11-01"
+    final dateFormat = DateFormat('yyyy-MM-dd');
+    final dateStr = dateFormat.format(state.selectedGroupTal3aDetail!.date);
+
+    // Send group request
+    await cubit.sendGroupRequest(
+      groupType: groupTypeApi,
+      date: dateStr,
+      time: _selectedTimeSlot!.startTime, // Use startTime from timeslot
     );
+
+    if (!mounted) return;
+
+    final currentState = cubit.state;
+    if (currentState.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(currentState.error ?? 'Failed to create group request'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else if (!currentState.isLoading) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Group request created successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      // Navigate to home after a short delay
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.of(context).popUntil((route) => route.isFirst);
+        }
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<BikingCubit, BikingState>(
       builder: (context, state) {
-        final selectedBikingGroupTime = state.selectedBikingGroupTime;
+        if (state.isLoading && state.selectedGroupTal3aDetail == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (state.error != null && state.selectedGroupTal3aDetail == null) {
+          return Center(
+            child: Text(
+              'Error: ${state.error}',
+              style: const TextStyle(color: Colors.red),
+            ),
+          );
+        }
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            const SizedBox(height: 20),
+            // Today's Pick Section (same style as walking)
+            AnimationHelper.slideUp(child: _buildTodaysPickSection(state)),
 
-            // Title with fade-in animation
-            AnimationHelper.titleAnimation(
-              child: Text(
-                'Choose Group Biking Time',
-                style: AppTextStyles.activityTypeTitleStyle,
-              ),
-            ),
+            SizedBox(height: 20.h),
 
-            const SizedBox(height: 20),
+            // Choose Time Section
+            AnimationHelper.slideUp(child: _buildChooseTimeSection(state)),
 
-            // Biking Group Time Cards with staggered animations
-            ...(_bikingGroupTimes.asMap().entries.map((entry) {
-              final index = entry.key;
-              final bikingGroupTime = entry.value;
-              final isSelected =
-                  selectedBikingGroupTime?.id == bikingGroupTime.id;
-
-              return AnimationHelper.cardAnimation(
-                index: index,
-                child: GestureDetector(
-                  onTap: () => _selectBikingGroupTime(context, bikingGroupTime),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    margin: const EdgeInsets.only(bottom: 15),
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color:
-                          isSelected
-                              ? ColorPalette.activityCardSelected
-                              : ColorPalette.activityCardBg,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow:
-                          isSelected
-                              ? [
-                                BoxShadow(
-                                  color: ColorPalette.activityCardSelected
-                                      .withOpacity(0.35),
-                                  offset: const Offset(0, 0),
-                                  blurRadius: 0,
-                                  spreadRadius: 4,
-                                ),
-                              ]
-                              : null,
-                    ),
-                    child: Row(
-                      children: [
-                        // Time Icon
-                        Container(
-                          width: 48,
-                          height: 48,
-                          decoration: BoxDecoration(
-                            color:
-                                isSelected
-                                    ? Colors.white.withOpacity(0.2)
-                                    : ColorPalette.activityTextGrey.withOpacity(
-                                      0.1,
-                                    ),
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          child: Icon(
-                            Icons.access_time,
-                            color:
-                                isSelected
-                                    ? Colors.white
-                                    : ColorPalette.activityTextGrey,
-                            size: 24,
-                          ),
-                        ),
-
-                        const SizedBox(width: 16),
-
-                        // Time Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                bikingGroupTime.timeSlot,
-                                style: AppTextStyles
-                                    .activityCardSelectedTextStyle
-                                    .copyWith(
-                                      color:
-                                          isSelected
-                                              ? Colors.white
-                                              : ColorPalette.activityTextGrey,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                bikingGroupTime.description,
-                                style: AppTextStyles.activityCardTextStyle
-                                    .copyWith(
-                                      color:
-                                          isSelected
-                                              ? Colors.white.withOpacity(0.8)
-                                              : ColorPalette.activityTextGrey,
-                                    ),
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                bikingGroupTime.date,
-                                style: AppTextStyles.activityCardTextStyle
-                                    .copyWith(
-                                      color:
-                                          isSelected
-                                              ? Colors.white.withOpacity(0.6)
-                                              : ColorPalette.activityTextGrey
-                                                  .withOpacity(0.7),
-                                      fontSize: 12,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            })),
-
-            const SizedBox(height: 40),
-
+            SizedBox(height: 40), // Fixed spacing instead of Spacer
             // Continue Button with fade-in animation
             AnimationHelper.slideUp(
               child: PrimaryButtonWidget(
                 text: 'Complete Setup',
                 onPressed:
-                    selectedBikingGroupTime != null
-                        ? () => _continue(context)
-                        : null,
-                isEnabled: selectedBikingGroupTime != null,
+                    _selectedTimeSlot != null ? () => _continue(context) : null,
+                isEnabled: _selectedTimeSlot != null,
               ),
             ),
           ],
         );
       },
+    );
+  }
+
+  Widget _buildTodaysPickSection(BikingState state) {
+    final selectedDetail = state.selectedGroupTal3aDetail;
+    if (selectedDetail == null) {
+      return const SizedBox.shrink();
+    }
+
+    // Format the date from the group tal3a detail
+    final dateFormat = DateFormat('d');
+    final dayFormat = DateFormat('EEE');
+    final dateStr = dateFormat.format(selectedDetail.date);
+    final dayStr = dayFormat.format(selectedDetail.date);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimationHelper.titleAnimation(
+          child: Text(
+            "Today's Pick",
+            style: AppTextStyles.trainingTitleStyle.copyWith(
+              color: ColorPalette.activityTextGrey,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        SizedBox(height: 15.h),
+
+        // Calendar-like display showing the date from the group tal3a detail
+        Container(
+          width: double.infinity,
+          height: 134.h,
+          child: Row(
+            children: [
+              _buildDayCard(dateStr, dayStr, true), // Selected date
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDayCard(String day, String dayName, bool isSelected) {
+    return Container(
+      width: 55.w,
+      height: isSelected ? 107.h : 76.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(11),
+        border:
+            isSelected
+                ? Border.all(color: ColorPalette.progressActive, width: 2)
+                : null,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            day,
+            style: AppTextStyles.trainingTitleStyle.copyWith(
+              color: ColorPalette.activityTextGrey,
+              fontSize: isSelected ? 25 : 20,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            dayName,
+            style: AppTextStyles.trainingTitleStyle.copyWith(
+              color: ColorPalette.calendarDayText,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChooseTimeSection(BikingState state) {
+    final selectedDetail = state.selectedGroupTal3aDetail;
+    if (selectedDetail == null || selectedDetail.timeSlots.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimationHelper.titleAnimation(
+          child: Text(
+            'Choose the time',
+            style: AppTextStyles.trainingTitleStyle.copyWith(
+              color: ColorPalette.activityTextGrey,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+
+        SizedBox(height: 15.h),
+
+        // Time slots list from the group tal3a detail
+        ...selectedDetail.timeSlots.map(_buildTimeSlotCard),
+      ],
+    );
+  }
+
+  Widget _buildTimeSlotCard(GroupTal3aDetailTimeSlot timeSlot) {
+    final isSelected = _selectedTimeSlot?.id == timeSlot.id;
+
+    return Container(
+      width: double.infinity,
+      height: 53.h,
+      margin: EdgeInsets.only(bottom: 14.h),
+      decoration: BoxDecoration(
+        color: isSelected ? ColorPalette.progressActive : ColorPalette.cardGrey,
+        borderRadius: BorderRadius.circular(14),
+        border:
+            isSelected
+                ? Border.all(color: ColorPalette.progressActive, width: 2)
+                : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _selectTime(timeSlot),
+          borderRadius: BorderRadius.circular(14),
+          child: Center(
+            child: Text(
+              timeSlot.startTime,
+              style: AppTextStyles.trainingTitleStyle.copyWith(
+                color: isSelected ? Colors.white : ColorPalette.calendarDayText,
+                fontSize: 16,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

@@ -30,6 +30,7 @@ class ActivityHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     return Container(
       height: screenHeight,
       width: double.infinity,
@@ -39,7 +40,7 @@ class ActivityHeaderWidget extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: 12.h), // Top padding
+            SizedBox(height: statusBarHeight - 30), // Top padding
             // Back Button
             GestureDetector(
               onTap: () {
@@ -306,7 +307,7 @@ class ActivityHeaderWidget extends StatelessWidget {
               ),
               child:
                   coach.imageUrl != null
-                      ? Image.asset(coach.imageUrl!, fit: BoxFit.cover)
+                      ? Image.network(coach.imageUrl!, fit: BoxFit.cover)
                       : Container(
                         color: Colors.grey[300],
                         child: Icon(
@@ -409,7 +410,7 @@ class ActivityHeaderWidget extends StatelessWidget {
       // Determine what to clear based on current step
       if (state.currentStep >= 3 && state.selectedMode != null) {
         // Clear mode and go back to coach selection
-        trainingCubit.selectMode(''); // Clear mode
+        trainingCubit.clearMode();
         trainingCubit.removeLastNavigationNode();
         print('Cleared mode, going back to coach selection');
       } else if (state.currentStep >= 2 && state.selectedCoach != null) {

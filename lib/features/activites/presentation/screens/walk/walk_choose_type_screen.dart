@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:tal3a/core/widgets/walk_activity_header_widget.dart';
 import 'package:tal3a/core/widgets/activity_content_widget.dart';
-import '../../controllers/walk_cubit.dart';
-import '../../controllers/walk_state.dart';
 import '../../widgets/walk/walk_choose_type_screen/walk_choose_type_form_widget.dart';
 
 class WalkChooseTypeScreen extends StatelessWidget {
@@ -22,6 +19,7 @@ class WalkChooseTypeScreen extends StatelessWidget {
             showTal3aType: true,
             showProgressBar: true,
             activeSteps: 1,
+            totalSteps: 5,
           ),
           ActivityContentWidget(
             screenHeight: screenHeight,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:tal3a/core/routing/routes.dart';
 import '../../../../../core/const/color_pallete.dart';
 import '../../../../../core/const/text_style.dart';
 import '../../controllers/home_cubit.dart';
@@ -61,6 +62,12 @@ class HomeTabSelectorWidget extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     context.read<HomeCubit>().toggleTab(false);
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      Navigator.pushNamed(
+                        context,
+                        Routes.chooseTal3aTypeScreen,
+                      );
+                    });
                   },
                   child: Container(
                     height: 60.h,

@@ -38,6 +38,7 @@ class Routes {
   static const String bikingChooseTypeScreen = '/bikingChooseType';
   static const String bikingChooseGenderScreen = '/bikingChooseGender';
   static const String bikingChooseFriendScreen = '/bikingChooseFriend';
+  static const String bikingChooseLocationScreen = '/bikingChooseLocation';
   static const String bikingChooseTimeScreen = '/bikingChooseTime';
   static const String bikingGroupChooseTypeScreen = '/bikingGroupChooseType';
   static const String bikingGroupChooseLocationScreen =

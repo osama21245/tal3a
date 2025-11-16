@@ -3,12 +3,14 @@ class WalkTimeModel {
   final String timeSlot;
   final bool isSelected;
   final bool isAvailable;
+  final DateTime? scheduledAt;
 
   const WalkTimeModel({
     required this.id,
     required this.timeSlot,
     this.isSelected = false,
     this.isAvailable = true,
+    this.scheduledAt,
   });
 
   factory WalkTimeModel.fromJson(Map<String, dynamic> json) {
@@ -17,6 +19,10 @@ class WalkTimeModel {
       timeSlot: json['timeSlot'] as String,
       isSelected: json['isSelected'] as bool? ?? false,
       isAvailable: json['isAvailable'] as bool? ?? true,
+      scheduledAt:
+          json['scheduledAt'] != null
+              ? DateTime.tryParse(json['scheduledAt'] as String)
+              : null,
     );
   }
 
@@ -26,6 +32,7 @@ class WalkTimeModel {
       'timeSlot': timeSlot,
       'isSelected': isSelected,
       'isAvailable': isAvailable,
+      'scheduledAt': scheduledAt?.toIso8601String(),
     };
   }
 
@@ -34,12 +41,14 @@ class WalkTimeModel {
     String? timeSlot,
     bool? isSelected,
     bool? isAvailable,
+    DateTime? scheduledAt,
   }) {
     return WalkTimeModel(
       id: id ?? this.id,
       timeSlot: timeSlot ?? this.timeSlot,
       isSelected: isSelected ?? this.isSelected,
       isAvailable: isAvailable ?? this.isAvailable,
+      scheduledAt: scheduledAt ?? this.scheduledAt,
     );
   }
 }

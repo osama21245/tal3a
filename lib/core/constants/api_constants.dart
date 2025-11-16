@@ -34,6 +34,20 @@ class ApiConstants {
   static const String getUserInfoEndpoint = '/api/v1/auth/getUserInfo';
   static const String refreshTokenEndpoint = '/api/v1/auth/refreshToken';
   static const String profileSetupEndpoint = '/api/v1/auth/completeProfile';
+  static const String getUserByGenderEndpoint = '/api/v1/user/getUserByGender';
+  static const String sendWalkRequestEndpoint = '/api/v1/user/sendRequest';
+  static const String getCoachesEndpoint = '/api/v1/user/getCoaches';
+  static const String getCoachDetailEndpoint = '/api/v1/user/coachDetail';
+  static const String getVideoSeriesEndpoint = '/api/v1/user/getVideoSeries';
+  static const String rateCoachEndpoint = '/api/v1/user/rateCoach';
+
+  // Group tal3a endpoints
+  static const String getGroupTal3aLocationsEndpoint =
+      '/api/v1/user/groupTal3a/locations';
+  static const String getGroupTal3aByLocationEndpoint =
+      '/api/v1/user/groupTal3a/byLocation';
+  static const String createGroupRequestEndpoint =
+      '/api/v1/user/createGroupRequest';
 
   // tal3a vibes endpoints
   static const String foryouVideos = '/api/v1/tal3aVibesRoute/videos/foryou';

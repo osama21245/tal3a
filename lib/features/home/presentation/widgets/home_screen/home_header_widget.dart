@@ -31,12 +31,13 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
   @override
   Widget build(BuildContext context) {
     final user = context.watch<UserController>().state.user;
+    final statusBarHeight = MediaQuery.of(context).viewPadding.top;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         children: [
           // Status Bar
-          SizedBox(height: 10),
+          SizedBox(height: statusBarHeight - 20),
           // Main Header Content
           Row(
             children: [
